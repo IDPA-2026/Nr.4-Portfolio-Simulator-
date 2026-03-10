@@ -1,3 +1,38 @@
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+input[type="month"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+}
+
+input[type="month"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+    background-color: var(--input-border);
+}
+
+.dark input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) opacity(0.7);
+}
+
+.dark input[type="month"]::-webkit-calendar-picker-indicator:hover {
+    filter: invert(1) opacity(1);
+}
+
+.recharts-cartesian-grid-horizontal line {
+    stroke-opacity: 0.5;
+}
+
 html {
     background-color: var(--bg-color);
     transition: background-color 0.5s ease;
