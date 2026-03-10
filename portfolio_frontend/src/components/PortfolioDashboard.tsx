@@ -1,10 +1,20 @@
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    TrendingUp,
+    GitMerge,
+    Trash2,
+    Settings2,
+    BarChart3
+} from 'lucide-react';
+
 import { Portfolio, PortfolioConfig, DepositStream } from '../types';
 import { calculatePortfolio } from '../utils/calculator';
 import PortfolioTabs from './PortfolioTabs';
 import PortfolioMergePanel from './PortfolioMergePanel';
 import PortfolioInputs from './PortfolioInputs';
 import PortfolioChart from './PortfolioChart';
+import GlassCard from './GlassCard';
 
 const defaultConfig: PortfolioConfig = {
     initialCapital: 10000,
@@ -100,7 +110,7 @@ export default function PortfolioDashboard() {
 
         const newId = crypto.randomUUID();
         const combinedNames = portfoliosToMerge.map(p => p.name).join(' + ');
-        const newPortfolioName = combinedNames.length > 40 ? `Gemergtes Portfolio (${count})` : combinedNames;
+        const newPortfolioName = combinedNames.length > 40 ? `Fusion (${count})` : combinedNames;
 
         const newPortfolio: Portfolio = {
             id: newId,
@@ -127,55 +137,106 @@ export default function PortfolioDashboard() {
     const availableForMerge = portfolios.filter(p => p.id !== activePortfolioId);
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8 font-sans text-gray-900">
-            <div className="max-w-7xl mx-auto">
-                <h1 className="text-3xl font-bold mb-6">Portfolio Simulator</h1>
+        <div className="dashboard">
+            <header className="dashboard-header">
+                <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="dashboard-title-group"
+                >
+                    <h1>WealthView</h1>
+                    <p className="dashboard-subtitle">Präzise Vermögensplanung & Simulation</p>
+                </motion.div>
 
-                <PortfolioTabs
-                    portfolios={portfolios}
-                    activePortfolioId={activePortfolioId}
-                    onSelect={(id) => { setActivePortfolioId(id); resetMerge(); }}
-                    onAdd={addPortfolio}
-                />
+                <div className="tabs-wrapper">
+                    <PortfolioTabs
+                        portfolios={portfolios}
+                        activePortfolioId={activePortfolioId}
+                        onSelect={(id) => { setActivePortfolioId(id); resetMerge(); }}
+                        onAdd={addPortfolio}
+                    />
+                </div>
+            </header>
 
-                <div className="mb-6 flex flex-col gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                    <div className="flex justify-between items-center">
-                        <input
-                            type="text"
-                            value={activePortfolio.name}
-                            onChange={(e) => updatePortfolioName(e.target.value)}
-                            className="text-xl font-bold border-b border-dashed border-gray-400 focus:outline-none focus:border-blue-600 bg-transparent px-1 w-1/2"
-                        />
-                        <div className="flex gap-4">
-                            {portfolios.length > 1 && !showMerge && (
-                                <button onClick={() => setShowMerge(true)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                    Zusammenführen (Merge)
-                                </button>
-                            )}
-                            {portfolios.length > 1 && (
-                                <button onClick={deleteActivePortfolio} className="text-red-500 hover:text-red-700 text-sm font-medium">
-                                    Portfolio löschen
-                                </button>
-                            )}
+            <div className="dashboard-grid">
+                <div className="dashboard-main">
+                    <GlassCard>
+                        <div className="action-bar">
+                            <div className="portfolio-name-wrapper">
+                                <div className="icon-wrapper">
+                                    <TrendingUp size={24} />
+                                </div>
+                                <input
+                                    type="text"
+                                    value={activePortfolio.name}
+                                    onChange={(e) => updatePortfolioName(e.target.value)}
+                                    className="portfolio-name-input"
+                                />
+                            </div>
+
+                            <div className="action-buttons">
+                                {portfolios.length > 1 && (
+                                    <button
+                                        onClick={() => setShowMerge(!showMerge)}
+                                        className={`btn-merge ${showMerge ? 'active' : ''}`}
+                                    >
+                                        <GitMerge size={18} />
+                                        Fusionieren
+                                    </button>
+                                )}
+                                {portfolios.length > 1 && (
+                                    <button
+                                        onClick={deleteActivePortfolio}
+                                        className="btn-delete"
+                                        title="Portfolio löschen"
+                                    >
+                                        <Trash2 size={20} />
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
 
-                    {showMerge && (
-                        <PortfolioMergePanel
-                            activePortfolio={activePortfolio}
-                            availablePortfolios={availableForMerge}
-                            selectedForMerge={selectedForMerge}
-                            setSelectedForMerge={setSelectedForMerge}
-                            deleteOriginals={deleteOriginals}
-                            setDeleteOriginals={setDeleteOriginals}
-                            onCancel={resetMerge}
-                            onConfirm={executeMerge}
-                        />
-                    )}
+                        <AnimatePresence>
+                            {showMerge && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="merge-panel-wrapper"
+                                >
+                                    <PortfolioMergePanel
+                                        activePortfolio={activePortfolio}
+                                        availablePortfolios={availableForMerge}
+                                        selectedForMerge={selectedForMerge}
+                                        setSelectedForMerge={setSelectedForMerge}
+                                        deleteOriginals={deleteOriginals}
+                                        setDeleteOriginals={setDeleteOriginals}
+                                        onCancel={resetMerge}
+                                        onConfirm={executeMerge}
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </GlassCard>
+
+                    <GlassCard>
+                        <div className="card-header-small">
+                            <BarChart3 size={20} />
+                            <h3>Vermögensentwicklung</h3>
+                        </div>
+                        <PortfolioChart data={chartData} />
+                    </GlassCard>
                 </div>
 
-                <PortfolioInputs config={activePortfolio.config} setConfig={updateActiveConfig} />
-                <PortfolioChart data={chartData} />
+                <aside className="dashboard-sidebar">
+                    <GlassCard>
+                        <div className="card-header-small">
+                            <Settings2 size={20} />
+                            <h3>Konfiguration</h3>
+                        </div>
+                        <PortfolioInputs config={activePortfolio.config} setConfig={updateActiveConfig} />
+                    </GlassCard>
+                </aside>
             </div>
         </div>
     );

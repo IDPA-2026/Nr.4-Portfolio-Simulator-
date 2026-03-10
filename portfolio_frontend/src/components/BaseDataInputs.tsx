@@ -9,28 +9,69 @@ interface Props {
 
 export default function BaseDataInputs({ config, onChange }: Props) {
     return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h2 className="text-xl font-semibold mb-4">Basisdaten</h2>
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">
+        <div className="config-card">
+            <div className="config-card-header">
+                <h2 className="config-card-title">Basisdaten</h2>
+            </div>
+            <div className="input-grid-2">
+                <div className="input-group">
+                    <label className="input-label">
                         Startkapital (€) <InfoTooltip text={GLOSSARY.initialCapital} />
                     </label>
-                    <input type="number" name="initialCapital" value={config.initialCapital} onChange={onChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                    <input
+                        type="number"
+                        name="initialCapital"
+                        value={config.initialCapital}
+                        onChange={onChange}
+                        className="input-field"
+                    />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                <div className="input-group">
+                    <label className="input-label">
                         Wachstum p.a. (%) <InfoTooltip text={GLOSSARY.growthRate} />
                     </label>
-                    <input type="number" step="0.1" name="annualGrowthRate" value={config.annualGrowthRate} onChange={onChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                    <input
+                        type="number"
+                        step="0.1"
+                        name="annualGrowthRate"
+                        value={config.annualGrowthRate}
+                        onChange={onChange}
+                        className="input-field"
+                    />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                <div className="input-group">
+                    <label className="input-label">
                         Inflation p.a. (%) <InfoTooltip text={GLOSSARY.inflationRate} />
                     </label>
-                    <input type="number" step="0.1" name="annualInflationRate" value={config.annualInflationRate} onChange={onChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                    <input
+                        type="number"
+                        step="0.1"
+                        name="annualInflationRate"
+                        value={config.annualInflationRate}
+                        onChange={onChange}
+                        className="input-field"
+                    />
                 </div>
-                {/* ... Rest der Komponente bleibt gleich ... */}
+                <div className="input-group">
+                    <label className="input-label">Simulationsstart</label>
+                    <input
+                        type="month"
+                        name="simulationStart"
+                        value={config.simulationStart}
+                        onChange={onChange}
+                        className="input-field"
+                    />
+                </div>
+                <div className="input-group">
+                    <label className="input-label">Simulationsende</label>
+                    <input
+                        type="month"
+                        name="simulationEnd"
+                        value={config.simulationEnd}
+                        onChange={onChange}
+                        className="input-field"
+                    />
+                </div>
             </div>
         </div>
     );

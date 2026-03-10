@@ -10,32 +10,60 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import { ChartDataPoint } from '../types';
+import { useEffect, useState } from 'react';
 
 interface Props {
     data: ChartDataPoint[];
 }
 
 export default function PortfolioChart({ data }: Props) {
+    const [chartColors, setChartColors] = useState({
+        nominal: '#10b981',
+        real: '#f59e0b',
+        area: '#f3f4f6',
+        stroke: '#9ca3af',
+        grid: '#e2e8f0',
+        text: '#6b7280'
+    });
+
+    useEffect(() => {
+        const updateColors = () => {
+            const root = getComputedStyle(document.documentElement);
+            setChartColors({
+                nominal: root.getPropertyValue('--chart-line-nominal').trim() || '#10b981',
+                real: root.getPropertyValue('--chart-line-real').trim() || '#f59e0b',
+                area: root.getPropertyValue('--chart-area-fill').trim() || '#f3f4f6',
+                stroke: root.getPropertyValue('--chart-area-stroke').trim() || '#9ca3af',
+                grid: root.getPropertyValue('--chart-grid').trim() || '#e2e8f0',
+                text: root.getPropertyValue('--chart-text').trim() || '#6b7280'
+            });
+        };
+
+        updateColors();
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    updateColors();
+                }
+            });
+        });
+
+        observer.observe(document.documentElement, { attributes: true });
+        return () => observer.disconnect();
+    }, []);
+
     return (
-        <div style={{
-            width: '100%',
-            height: '500px',
-            marginTop: '40px',
-            backgroundColor: '#fff',
-            padding: '20px',
-            borderRadius: '8px',
-            border: '1px solid #e5e7eb'
-        }}>
+        <div className="chart-container">
             <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartColors.grid} />
                     <XAxis
                         dataKey="date"
-                        tick={{ fill: '#6b7280', fontSize: 12 }}
+                        tick={{ fill: chartColors.text, fontSize: 12 }}
                         tickMargin={10}
                     />
                     <YAxis
-                        tick={{ fill: '#6b7280', fontSize: 12 }}
+                        tick={{ fill: chartColors.text, fontSize: 12 }}
                         tickFormatter={(value: number) => `${value.toLocaleString('de-DE')} €`}
                         width={80}
                     />
@@ -45,8 +73,7 @@ export default function PortfolioChart({ data }: Props) {
                         ]}
                         contentStyle={{
                             borderRadius: '8px',
-                            border: 'none',
-                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                            border: 'none'
                         }}
                     />
                     <Legend wrapperStyle={{ paddingTop: '20px' }} />
@@ -54,15 +81,15 @@ export default function PortfolioChart({ data }: Props) {
                     <Area
                         type="monotone"
                         dataKey="totalDeposited"
-                        fill="#f3f4f6"
-                        stroke="#9ca3af"
+                        fill={chartColors.area}
+                        stroke={chartColors.stroke}
                         name="Eingezahltes Kapital"
                         isAnimationActive={false}
                     />
                     <Line
                         type="monotone"
                         dataKey="nominalValue"
-                        stroke="#10b981"
+                        stroke={chartColors.nominal}
                         strokeWidth={3}
                         dot={false}
                         name="Nominalwert (inkl. Zinsen)"
@@ -71,7 +98,7 @@ export default function PortfolioChart({ data }: Props) {
                     <Line
                         type="monotone"
                         dataKey="realValue"
-                        stroke="#f59e0b"
+                        stroke={chartColors.real}
                         strokeWidth={2}
                         strokeDasharray="5 5"
                         dot={false}

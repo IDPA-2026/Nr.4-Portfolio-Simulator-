@@ -39,7 +39,7 @@ export default function PortfolioInputs({ config, setConfig }: Props) {
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="inputs-grid">
             <BaseDataInputs config={config} onChange={handleBaseChange} />
             <DepositStreamInputs
                 streams={config.depositStreams}
