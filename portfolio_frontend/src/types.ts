@@ -15,6 +15,12 @@ export interface PortfolioConfig {
     simulationEnd: string;
 }
 
+export interface Portfolio {
+    id: string;
+    name: string;
+    config: PortfolioConfig;
+}
+
 export interface ChartDataPoint {
     date: string;
     totalDeposited: number;
