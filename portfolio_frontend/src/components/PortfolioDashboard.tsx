@@ -1,6 +1,6 @@
 import { useState, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, GitMerge, Trash2, Settings2, BarChart3, LayoutDashboard } from 'lucide-react';
+import { TrendingUp, GitMerge, Trash2, Settings2, BarChart3, LayoutDashboard, Clock } from 'lucide-react';
 
 import { Portfolio, PortfolioConfig, DepositStream } from '../types';
 import { calculatePortfolio } from '../utils/calculator';
@@ -11,8 +11,16 @@ import PortfolioInputs from './PortfolioInputs';
 import PortfolioChart from './PortfolioChart';
 import GlassCard from './GlassCard';
 
-const DashboardChart = memo(({ portfolio, isCompareMode }: { portfolio: Portfolio, isCompareMode: boolean }) => {
-    const data = useMemo(() => calculatePortfolio(portfolio.config), [portfolio.config]);
+type TimeRange = '5y' | '10y' | 'max';
+
+const DashboardChart = memo(({ portfolio, isCompareMode, timeRange }: { portfolio: Portfolio, isCompareMode: boolean, timeRange: TimeRange }) => {
+    const data = useMemo(() => {
+        const fullData = calculatePortfolio(portfolio.config);
+        if (timeRange === 'max') return fullData;
+        const months = timeRange === '5y' ? 60 : 120;
+        return fullData.slice(0, months);
+    }, [portfolio.config, timeRange]);
+
     return (
         <GlassCard>
             <div className="card-header-small">
@@ -24,12 +32,13 @@ const DashboardChart = memo(({ portfolio, isCompareMode }: { portfolio: Portfoli
     );
 });
 
+// Startdatum auf März 2026 gesetzt
 const defaultConfig: PortfolioConfig = {
     initialCapital: 10000,
     annualGrowthRate: 7,
     annualInflationRate: 2,
-    simulationStart: '2024-01',
-    simulationEnd: '2034-12',
+    simulationStart: '2026-03',
+    simulationEnd: '2036-03',
     depositStreams: []
 };
 
@@ -38,9 +47,12 @@ const COMPARE_COLORS = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
 export default function PortfolioDashboard() {
     const [portfolios, setPortfolios] = useState<Portfolio[]>([{ id: '1', name: 'Hauptportfolio', config: defaultConfig }]);
     const [activePortfolioId, setActivePortfolioId] = useState<string>('1');
+    const [timeRange, setTimeRange] = useState<TimeRange>('max');
+
     const [showMerge, setShowMerge] = useState<boolean>(false);
     const [selectedForMerge, setSelectedForMerge] = useState<string[]>([]);
     const [deleteOriginals, setDeleteOriginals] = useState<boolean>(false);
+
     const [isCompareMode, setIsCompareMode] = useState<boolean>(false);
     const [compareIds, setCompareIds] = useState<string[]>([]);
     const [isCombinedView, setIsCombinedView] = useState<boolean>(false);
@@ -76,14 +88,6 @@ export default function PortfolioDashboard() {
         setDeleteOriginals(false);
         setIsCompareMode(false);
         setIsCombinedView(false);
-    };
-
-    const toggleCompareMode = () => {
-        if (!isCompareMode) {
-            setShowMerge(false);
-            setCompareIds([activePortfolioId]);
-        }
-        setIsCompareMode(!isCompareMode);
     };
 
     const executeMerge = (settings: MergeSettings) => {
@@ -132,19 +136,23 @@ export default function PortfolioDashboard() {
     const displayPortfolios = portfolios.filter(p => isCompareMode ? compareIds.includes(p.id) : p.id === activePortfolioId);
 
     const combinedChartData = useMemo(() => {
-        return displayPortfolios.map((p, i) => ({
-            name: p.name,
-            data: calculatePortfolio(p.config),
-            color: COMPARE_COLORS[i % COMPARE_COLORS.length]
-        }));
-    }, [displayPortfolios]);
+        return displayPortfolios.map((p, i) => {
+            const fullData = calculatePortfolio(p.config);
+            const slicedData = timeRange === 'max' ? fullData : fullData.slice(0, timeRange === '5y' ? 60 : 120);
+            return {
+                name: p.name,
+                data: slicedData,
+                color: COMPARE_COLORS[i % COMPARE_COLORS.length]
+            };
+        });
+    }, [displayPortfolios, timeRange]);
 
     return (
         <div className="dashboard">
             <header className="dashboard-header">
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="dashboard-title-group">
                     <h1>WealthView</h1>
-                    <p className="dashboard-subtitle">Strategische Finanzplanung</p>
+                    <p className="dashboard-subtitle">Strategische Finanzplanung (Stand: 2026)</p>
                 </motion.div>
                 <div className="tabs-wrapper">
                     <PortfolioTabs portfolios={portfolios} activePortfolioId={activePortfolioId} onSelect={(id) => { setActivePortfolioId(id); resetModes(); }} onAdd={addPortfolio} />
@@ -162,7 +170,7 @@ export default function PortfolioDashboard() {
                             <div className="action-buttons">
                                 {portfolios.length > 1 && (
                                     <>
-                                        <button onClick={toggleCompareMode} className={`btn-compare ${isCompareMode ? 'active' : ''}`}><LayoutDashboard size={18} />Vergleichen</button>
+                                        <button onClick={() => { setIsCompareMode(!isCompareMode); setCompareIds([activePortfolioId]); }} className={`btn-compare ${isCompareMode ? 'active' : ''}`}><LayoutDashboard size={18} />Vergleichen</button>
                                         <button onClick={() => setShowMerge(!showMerge)} className={`btn-merge ${showMerge ? 'active' : ''}`}><GitMerge size={18} />Fusionieren</button>
                                     </>
                                 )}
@@ -178,18 +186,27 @@ export default function PortfolioDashboard() {
                             )}
                             {isCompareMode && (
                                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="merge-panel-wrapper">
-                                    <PortfolioComparePanel
-                                        portfolios={portfolios}
-                                        compareIds={compareIds}
-                                        setCompareIds={setCompareIds}
-                                        onClose={() => setIsCompareMode(false)}
-                                        isCombinedView={isCombinedView}
-                                        setIsCombinedView={setIsCombinedView}
-                                    />
+                                    <PortfolioComparePanel portfolios={portfolios} compareIds={compareIds} setCompareIds={setCompareIds} onClose={() => setIsCompareMode(false)} isCombinedView={isCombinedView} setIsCombinedView={setIsCombinedView} />
                                 </motion.div>
                             )}
                         </AnimatePresence>
                     </GlassCard>
+
+                    {/* Zeit-Filter Bar */}
+                    <div className="filter-container">
+                        <div className="filter-label"><Clock size={14} /> Zeitraum:</div>
+                        <div className="filter-buttons">
+                            {(['5y', '10y', 'max'] as TimeRange[]).map(r => (
+                                <button
+                                    key={r}
+                                    className={`btn-filter ${timeRange === r ? 'active' : ''}`}
+                                    onClick={() => setTimeRange(r)}
+                                >
+                                    {r === 'max' ? 'Max' : r.replace('y', ' Jahre')}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
                     <div className={`charts-grid ${isCompareMode && !isCombinedView && displayPortfolios.length > 1 ? 'compare-active' : ''}`}>
                         {isCompareMode && isCombinedView ? (
@@ -199,7 +216,7 @@ export default function PortfolioDashboard() {
                             </GlassCard>
                         ) : (
                             displayPortfolios.map(p => (
-                                <DashboardChart key={p.id} portfolio={p} isCompareMode={isCompareMode} />
+                                <DashboardChart key={p.id} portfolio={p} isCompareMode={isCompareMode} timeRange={timeRange} />
                             ))
                         )}
                     </div>
