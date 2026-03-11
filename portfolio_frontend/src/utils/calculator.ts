@@ -10,19 +10,22 @@ export function calculatePortfolio(config: PortfolioConfig): ChartDataPoint[] {
     let currentTotalDeposited = config.initialCapital;
     let cumulativeInflation = 1;
 
-    const startDate = new Date(config.simulationStart + "-01");
-    const endDate = new Date(config.simulationEnd + "-01");
-    let currentDate = new Date(startDate.getTime());
+    // Start- und Enddatum in schnelle Integer zerlegen statt langsame Date-Objekte zu nutzen
+    let [currentYear, currentMonth] = config.simulationStart.split('-').map(Number);
+    const [endYear, endMonth] = config.simulationEnd.split('-').map(Number);
 
-    while (currentDate <= endDate) {
-        const currentMonthStr = currentDate.toISOString().slice(0, 7);
+    while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
+        // String im Format YYYY-MM bauen (z.B. 2024-05)
+        const currentMonthStr = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`;
 
         let monthlyDeposit = 0;
-        config.depositStreams.forEach(stream => {
+        // Normale for-Schleife ist minimal schneller als .forEach
+        for (let i = 0; i < config.depositStreams.length; i++) {
+            const stream = config.depositStreams[i];
             if (currentMonthStr >= stream.startMonth && currentMonthStr <= stream.endMonth) {
                 monthlyDeposit += stream.monthlyAmount;
             }
-        });
+        }
 
         currentNominalCapital = currentNominalCapital * monthlyGrowthMultiplier;
         currentNominalCapital += monthlyDeposit;
@@ -38,7 +41,12 @@ export function calculatePortfolio(config: PortfolioConfig): ChartDataPoint[] {
             realValue: Number(currentRealCapital.toFixed(2))
         });
 
-        currentDate.setMonth(currentDate.getMonth() + 1);
+        // Monat manuell hochzählen
+        currentMonth++;
+        if (currentMonth > 12) {
+            currentMonth = 1;
+            currentYear++;
+        }
     }
 
     return result;

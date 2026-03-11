@@ -16,10 +16,11 @@ interface Props {
     data: ChartDataPoint[];
 }
 
+const dateFormatter = new Intl.DateTimeFormat('de-DE', { month: 'short', year: 'numeric' });
+
 const formatMonth = (dateStr: string) => {
     const [year, month] = dateStr.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString('de-DE', { month: 'short', year: 'numeric' });
+    return dateFormatter.format(new Date(parseInt(year), parseInt(month) - 1));
 };
 
 export default function PortfolioChart({ data }: Props) {
