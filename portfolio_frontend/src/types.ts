@@ -6,13 +6,23 @@ export interface DepositStream {
     monthlyAmount: number;
 }
 
+export interface StockPosition {
+    id: string;
+    symbol: string;
+    name: string;
+    shares: number;
+    price: number;
+    currency: string;
+}
+
 export interface PortfolioConfig {
     initialCapital: number;
     annualGrowthRate: number;
     annualInflationRate: number;
-    depositStreams: DepositStream[];
     simulationStart: string;
     simulationEnd: string;
+    depositStreams: DepositStream[];
+    stocks: StockPosition[]; // NEU: Aktien-Array hinzugefügt
 }
 
 export interface Portfolio {

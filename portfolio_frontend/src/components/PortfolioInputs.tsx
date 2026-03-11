@@ -1,6 +1,7 @@
-import { PortfolioConfig, DepositStream } from '../types';
+import { PortfolioConfig, DepositStream, StockPosition } from '../types';
 import BaseDataInputs from './BaseDataInputs';
 import DepositStreamInputs from './DepositStreamInputs';
+import StockSearchInputs from './StockSearchInputs';
 
 interface Props {
     config: PortfolioConfig;
@@ -16,6 +17,7 @@ export default function PortfolioInputs({ config, setConfig }: Props) {
         });
     };
 
+    // Sparpläne Logik
     const addStream = () => {
         const newStream: DepositStream = {
             id: crypto.randomUUID(),
@@ -38,9 +40,33 @@ export default function PortfolioInputs({ config, setConfig }: Props) {
         setConfig({ ...config, depositStreams: config.depositStreams.filter(s => s.id !== id) });
     };
 
+    // Aktien Logik
+    const addStock = (stock: StockPosition) => {
+        setConfig({ ...config, stocks: [...(config.stocks || []), stock] });
+    };
+
+    const removeStock = (id: string) => {
+        setConfig({ ...config, stocks: (config.stocks || []).filter(s => s.id !== id) });
+    };
+
+    const updateStockShares = (id: string, shares: number) => {
+        const updatedStocks = (config.stocks || []).map(stock =>
+            stock.id === id ? { ...stock, shares } : stock
+        );
+        setConfig({ ...config, stocks: updatedStocks });
+    };
+
     return (
         <div className="inputs-grid">
             <BaseDataInputs config={config} onChange={handleBaseChange} />
+
+            <StockSearchInputs
+                stocks={config.stocks || []}
+                onAdd={addStock}
+                onRemove={removeStock}
+                onUpdateShares={updateStockShares}
+            />
+
             <DepositStreamInputs
                 streams={config.depositStreams}
                 onAdd={addStream}

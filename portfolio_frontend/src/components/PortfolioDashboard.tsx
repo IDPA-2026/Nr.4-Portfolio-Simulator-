@@ -2,7 +2,7 @@ import { useState, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, GitMerge, Trash2, Settings2, BarChart3, LayoutDashboard, Clock } from 'lucide-react';
 
-import { Portfolio, PortfolioConfig, DepositStream } from '../types';
+import {Portfolio, PortfolioConfig, DepositStream, StockPosition} from '../types';
 import { calculatePortfolio } from '../utils/calculator';
 import PortfolioTabs from './PortfolioTabs';
 import PortfolioMergePanel, { MergeSettings } from './PortfolioMergePanel';
@@ -32,14 +32,14 @@ const DashboardChart = memo(({ portfolio, isCompareMode, timeRange }: { portfoli
     );
 });
 
-// Startdatum auf März 2026 gesetzt
 const defaultConfig: PortfolioConfig = {
     initialCapital: 10000,
     annualGrowthRate: 7,
     annualInflationRate: 2,
     simulationStart: '2026-03',
     simulationEnd: '2036-03',
-    depositStreams: []
+    depositStreams: [],
+    stocks: [] // <-- Das hier einfügen!
 };
 
 const COMPARE_COLORS = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
@@ -96,12 +96,16 @@ export default function PortfolioDashboard() {
         let minStart = portfoliosToMerge[0].config.simulationStart;
         let maxEnd = portfoliosToMerge[0].config.simulationEnd;
         let totalCapital = 0, allStreams: DepositStream[] = [];
+        let allStocks: StockPosition[] = []; // <-- NEU: Array für die Aktien
 
         portfoliosToMerge.forEach(p => {
             totalCapital += p.config.initialCapital;
             if (p.config.simulationStart < minStart) minStart = p.config.simulationStart;
             if (p.config.simulationEnd > maxEnd) maxEnd = p.config.simulationEnd;
             allStreams = [...allStreams, ...p.config.depositStreams.map(s => ({ ...s, id: crypto.randomUUID() }))];
+
+            // <-- NEU: Aktien der zu fusionierenden Portfolios einsammeln
+            allStocks = [...allStocks, ...(p.config.stocks || []).map(s => ({ ...s, id: crypto.randomUUID() }))];
         });
 
         const getRate = (strategy: 'avg' | string, field: 'annualGrowthRate' | 'annualInflationRate') => {
@@ -122,7 +126,8 @@ export default function PortfolioDashboard() {
                 annualInflationRate: getRate(settings.inflationStrategy, 'annualInflationRate'),
                 simulationStart: minStart,
                 simulationEnd: maxEnd,
-                depositStreams: allStreams
+                depositStreams: allStreams,
+                stocks: allStocks // <-- NEU: Hier fehlte die Eigenschaft!
             }
         };
 
