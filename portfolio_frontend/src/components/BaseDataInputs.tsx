@@ -1,6 +1,7 @@
 import { PortfolioConfig } from '../types';
 import { GLOSSARY } from '../constants/glossary';
 import InfoTooltip from './InfoTooltip';
+import { Calendar } from 'lucide-react';
 
 interface Props {
     config: PortfolioConfig;
@@ -54,23 +55,35 @@ export default function BaseDataInputs({ config, onChange }: Props) {
                 </div>
                 <div className="input-group">
                     <label className="input-label">Simulationsstart</label>
-                    <input
-                        type="month"
-                        name="simulationStart"
-                        value={config.simulationStart}
-                        onChange={onChange}
-                        className="input-field"
-                    />
+                    <div className="date-input-wrapper">
+                        <input
+                            type="month"
+                            name="simulationStart"
+                            value={config.simulationStart}
+                            onChange={onChange}
+                            onClick={(e) => {
+                                try { e.currentTarget.showPicker?.(); } catch (err) {}
+                            }}
+                            className="input-field"
+                        />
+                        <Calendar size={18} className="date-icon" />
+                    </div>
                 </div>
                 <div className="input-group">
                     <label className="input-label">Simulationsende</label>
-                    <input
-                        type="month"
-                        name="simulationEnd"
-                        value={config.simulationEnd}
-                        onChange={onChange}
-                        className="input-field"
-                    />
+                    <div className="date-input-wrapper">
+                        <input
+                            type="month"
+                            name="simulationEnd"
+                            value={config.simulationEnd}
+                            onChange={onChange}
+                            onClick={(e) => {
+                                try { e.currentTarget.showPicker?.(); } catch (err) {}
+                            }}
+                            className="input-field"
+                        />
+                        <Calendar size={18} className="date-icon" />
+                    </div>
                 </div>
             </div>
         </div>

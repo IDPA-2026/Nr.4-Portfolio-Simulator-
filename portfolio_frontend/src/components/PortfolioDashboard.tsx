@@ -1,17 +1,19 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     TrendingUp,
     GitMerge,
     Trash2,
     Settings2,
-    BarChart3
+    BarChart3,
+    LayoutDashboard // Neues Icon für Compare
 } from 'lucide-react';
 
 import { Portfolio, PortfolioConfig, DepositStream } from '../types';
 import { calculatePortfolio } from '../utils/calculator';
 import PortfolioTabs from './PortfolioTabs';
 import PortfolioMergePanel from './PortfolioMergePanel';
+import PortfolioComparePanel from './PortfolioComparePanel'; // Neuer Import
 import PortfolioInputs from './PortfolioInputs';
 import PortfolioChart from './PortfolioChart';
 import GlassCard from './GlassCard';
@@ -31,9 +33,14 @@ export default function PortfolioDashboard() {
     ]);
     const [activePortfolioId, setActivePortfolioId] = useState<string>('1');
 
+    // Merge State
     const [showMerge, setShowMerge] = useState<boolean>(false);
     const [selectedForMerge, setSelectedForMerge] = useState<string[]>([]);
     const [deleteOriginals, setDeleteOriginals] = useState<boolean>(false);
+
+    // Compare State
+    const [isCompareMode, setIsCompareMode] = useState<boolean>(false);
+    const [compareIds, setCompareIds] = useState<string[]>([]);
 
     const activePortfolio = portfolios.find(p => p.id === activePortfolioId) || portfolios[0];
 
@@ -53,7 +60,7 @@ export default function PortfolioDashboard() {
         const newId = crypto.randomUUID();
         setPortfolios([...portfolios, { id: newId, name: `Portfolio ${portfolios.length + 1}`, config: defaultConfig }]);
         setActivePortfolioId(newId);
-        resetMerge();
+        resetModes();
     };
 
     const deleteActivePortfolio = () => {
@@ -61,13 +68,35 @@ export default function PortfolioDashboard() {
         const newPortfolios = portfolios.filter(p => p.id !== activePortfolioId);
         setPortfolios(newPortfolios);
         setActivePortfolioId(newPortfolios[0].id);
-        resetMerge();
+
+        // Remove from compare list if it was there
+        if (compareIds.includes(activePortfolioId)) {
+            setCompareIds(compareIds.filter(id => id !== activePortfolioId));
+        }
+        resetModes();
     };
 
-    const resetMerge = () => {
+    const resetModes = () => {
         setShowMerge(false);
         setSelectedForMerge([]);
         setDeleteOriginals(false);
+        setIsCompareMode(false);
+    };
+
+    const toggleCompareMode = () => {
+        if (!isCompareMode) {
+            setShowMerge(false); // Close merge if open
+            setCompareIds([activePortfolioId]); // Init mit dem aktuellen Portfolio
+        }
+        setIsCompareMode(!isCompareMode);
+    };
+
+    const toggleMergeMode = () => {
+        if (!showMerge) {
+            setIsCompareMode(false); // Close compare if open
+            setSelectedForMerge([]);
+        }
+        setShowMerge(!showMerge);
     };
 
     const executeMerge = () => {
@@ -130,11 +159,15 @@ export default function PortfolioDashboard() {
 
         setPortfolios(updatedPortfolios);
         setActivePortfolioId(newId);
-        resetMerge();
+        resetModes();
     };
 
-    const chartData = useMemo(() => calculatePortfolio(activePortfolio.config), [activePortfolio.config]);
     const availableForMerge = portfolios.filter(p => p.id !== activePortfolioId);
+
+    // Welche Portfolios sollen gerendert werden? (1 bei Normal, X bei Compare)
+    const displayPortfolios = isCompareMode
+        ? portfolios.filter(p => compareIds.includes(p.id))
+        : [activePortfolio];
 
     return (
         <div className="dashboard">
@@ -152,7 +185,10 @@ export default function PortfolioDashboard() {
                     <PortfolioTabs
                         portfolios={portfolios}
                         activePortfolioId={activePortfolioId}
-                        onSelect={(id) => { setActivePortfolioId(id); resetMerge(); }}
+                        onSelect={(id) => {
+                            setActivePortfolioId(id);
+                            resetModes();
+                        }}
                         onAdd={addPortfolio}
                     />
                 </div>
@@ -176,13 +212,22 @@ export default function PortfolioDashboard() {
 
                             <div className="action-buttons">
                                 {portfolios.length > 1 && (
-                                    <button
-                                        onClick={() => setShowMerge(!showMerge)}
-                                        className={`btn-merge ${showMerge ? 'active' : ''}`}
-                                    >
-                                        <GitMerge size={18} />
-                                        Fusionieren
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={toggleCompareMode}
+                                            className={`btn-compare ${isCompareMode ? 'active' : ''}`}
+                                        >
+                                            <LayoutDashboard size={18} />
+                                            Vergleichen
+                                        </button>
+                                        <button
+                                            onClick={toggleMergeMode}
+                                            className={`btn-merge ${showMerge ? 'active' : ''}`}
+                                        >
+                                            <GitMerge size={18} />
+                                            Fusionieren
+                                        </button>
+                                    </>
                                 )}
                                 {portfolios.length > 1 && (
                                     <button
@@ -196,6 +241,7 @@ export default function PortfolioDashboard() {
                             </div>
                         </div>
 
+                        {/* Panels Animation */}
                         <AnimatePresence>
                             {showMerge && (
                                 <motion.div
@@ -211,28 +257,49 @@ export default function PortfolioDashboard() {
                                         setSelectedForMerge={setSelectedForMerge}
                                         deleteOriginals={deleteOriginals}
                                         setDeleteOriginals={setDeleteOriginals}
-                                        onCancel={resetMerge}
+                                        onCancel={resetModes}
                                         onConfirm={executeMerge}
+                                    />
+                                </motion.div>
+                            )}
+                            {isCompareMode && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="merge-panel-wrapper"
+                                >
+                                    <PortfolioComparePanel
+                                        portfolios={portfolios}
+                                        compareIds={compareIds}
+                                        setCompareIds={setCompareIds}
+                                        onClose={() => setIsCompareMode(false)}
                                     />
                                 </motion.div>
                             )}
                         </AnimatePresence>
                     </GlassCard>
 
-                    <GlassCard>
-                        <div className="card-header-small">
-                            <BarChart3 size={20} />
-                            <h3>Vermögensentwicklung</h3>
-                        </div>
-                        <PortfolioChart data={chartData} />
-                    </GlassCard>
+                    {/* Dynamisches Grid für die Graphen */}
+                    <div className={`charts-grid ${isCompareMode && displayPortfolios.length > 1 ? 'compare-active' : ''}`}>
+                        {displayPortfolios.map(p => (
+                            <GlassCard key={p.id}>
+                                <div className="card-header-small">
+                                    <BarChart3 size={20} />
+                                    <h3>{isCompareMode ? p.name : 'Vermögensentwicklung'}</h3>
+                                </div>
+                                {/* Der Chart wird pro ausgewähltem Portfolio einmal generiert */}
+                                <PortfolioChart data={calculatePortfolio(p.config)} />
+                            </GlassCard>
+                        ))}
+                    </div>
                 </div>
 
                 <aside className="dashboard-sidebar">
                     <GlassCard>
                         <div className="card-header-small">
                             <Settings2 size={20} />
-                            <h3>Konfiguration</h3>
+                            <h3>Konfiguration {isCompareMode && `(${activePortfolio.name})`}</h3>
                         </div>
                         <PortfolioInputs config={activePortfolio.config} setConfig={updateActiveConfig} />
                     </GlassCard>

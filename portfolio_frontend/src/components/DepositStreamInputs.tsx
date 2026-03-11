@@ -1,4 +1,5 @@
 import { DepositStream } from '../types';
+import { Calendar } from 'lucide-react';
 
 interface Props {
     streams: DepositStream[];
@@ -41,18 +42,30 @@ export default function DepositStreamInputs({ streams, onAdd, onUpdate, onRemove
                             </div>
                         </div>
                         <div className="stream-row">
-                            <input
-                                type="month"
-                                value={stream.startMonth}
-                                onChange={e => onUpdate(stream.id, 'startMonth', e.target.value)}
-                                className="input-field"
-                            />
-                            <input
-                                type="month"
-                                value={stream.endMonth}
-                                onChange={e => onUpdate(stream.id, 'endMonth', e.target.value)}
-                                className="input-field"
-                            />
+                            <div className="date-input-wrapper">
+                                <input
+                                    type="month"
+                                    value={stream.startMonth}
+                                    onChange={e => onUpdate(stream.id, 'startMonth', e.target.value)}
+                                    onClick={(e) => {
+                                        try { e.currentTarget.showPicker?.(); } catch (err) {}
+                                    }}
+                                    className="input-field"
+                                />
+                                <Calendar size={18} className="date-icon" />
+                            </div>
+                            <div className="date-input-wrapper">
+                                <input
+                                    type="month"
+                                    value={stream.endMonth}
+                                    onChange={e => onUpdate(stream.id, 'endMonth', e.target.value)}
+                                    onClick={(e) => {
+                                        try { e.currentTarget.showPicker?.(); } catch (err) {}
+                                    }}
+                                    className="input-field"
+                                />
+                                <Calendar size={18} className="date-icon" />
+                            </div>
                         </div>
                     </div>
                 ))}
