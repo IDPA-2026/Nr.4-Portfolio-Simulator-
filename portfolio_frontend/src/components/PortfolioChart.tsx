@@ -14,21 +14,19 @@ import { useEffect, useState } from 'react';
 
 interface Props {
     data: ChartDataPoint[];
+    multiData?: { name: string, data: ChartDataPoint[], color: string }[];
 }
 
 const dateFormatter = new Intl.DateTimeFormat('de-DE', { month: 'short', year: 'numeric' });
 
-const formatMonth = (dateStr: string) => {
-    const [year, month] = dateStr.split('-');
+const formatMonth = (label: any) => {
+    if (typeof label !== 'string') return label;
+    const [year, month] = label.split('-');
     return dateFormatter.format(new Date(parseInt(year), parseInt(month) - 1));
 };
 
-export default function PortfolioChart({ data }: Props) {
+export default function PortfolioChart({ data, multiData }: Props) {
     const [chartColors, setChartColors] = useState({
-        nominal: '#10b981',
-        real: '#f59e0b',
-        area: '#3b82f6',
-        stroke: '#2563eb',
         grid: '#e2e8f0',
         text: '#6b7280',
         tooltipBg: '#ffffff',
@@ -41,10 +39,6 @@ export default function PortfolioChart({ data }: Props) {
             const isDark = document.documentElement.classList.contains('dark');
 
             setChartColors({
-                nominal: root.getPropertyValue('--chart-line-nominal').trim() || '#10b981',
-                real: root.getPropertyValue('--chart-line-real').trim() || '#f59e0b',
-                area: root.getPropertyValue('--primary').trim() || '#3b82f6',
-                stroke: root.getPropertyValue('--primary').trim() || '#2563eb',
                 grid: root.getPropertyValue('--chart-grid').trim() || '#e2e8f0',
                 text: root.getPropertyValue('--chart-text').trim() || '#6b7280',
                 tooltipBg: isDark ? '#1e293b' : '#ffffff',
@@ -55,9 +49,7 @@ export default function PortfolioChart({ data }: Props) {
         updateColors();
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-                if (mutation.attributeName === 'class') {
-                    updateColors();
-                }
+                if (mutation.attributeName === 'class') updateColors();
             });
         });
 
@@ -65,26 +57,25 @@ export default function PortfolioChart({ data }: Props) {
         return () => observer.disconnect();
     }, []);
 
+    const isCombined = !!multiData && multiData.length > 0;
+
     return (
         <div className="chart-container">
             <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={data} margin={{ top: 10, right: 10, bottom: 0, left: 10 }}>
+                <ComposedChart margin={{ top: 10, right: 10, bottom: 0, left: 10 }}>
                     <defs>
                         <linearGradient id="colorDeposited" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={chartColors.area} stopOpacity={0.3} />
-                            <stop offset="95%" stopColor={chartColors.area} stopOpacity={0} />
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                         </linearGradient>
                     </defs>
 
-                    <CartesianGrid
-                        strokeDasharray="4 4"
-                        vertical={false}
-                        stroke={chartColors.grid}
-                    />
+                    <CartesianGrid strokeDasharray="4 4" vertical={false} stroke={chartColors.grid} />
 
                     <XAxis
                         dataKey="date"
-                        tick={{ fill: chartColors.text, fontSize: 12, fontWeight: 500 }}
+                        allowDuplicatedCategory={false}
+                        tick={{ fill: chartColors.text, fontSize: 12 }}
                         tickMargin={12}
                         tickFormatter={formatMonth}
                         minTickGap={40}
@@ -93,16 +84,15 @@ export default function PortfolioChart({ data }: Props) {
                     />
 
                     <YAxis
-                        tick={{ fill: chartColors.text, fontSize: 12, fontWeight: 500 }}
+                        tick={{ fill: chartColors.text, fontSize: 12 }}
                         tickFormatter={(value: number) => `${(value / 1000).toLocaleString('de-DE')}k €`}
                         width={60}
                         axisLine={false}
                         tickLine={false}
-                        tickMargin={8}
                     />
 
                     <Tooltip
-                        labelFormatter={(label) => formatMonth(label as string)}
+                        labelFormatter={formatMonth}
                         formatter={(value: any, name: any) => [
                             `${Number(value).toLocaleString('de-DE')} €`,
                             name
@@ -112,52 +102,59 @@ export default function PortfolioChart({ data }: Props) {
                             border: '1px solid var(--border-color)',
                             backgroundColor: chartColors.tooltipBg,
                             color: chartColors.tooltipText,
-                            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-                            padding: '12px 16px',
-                            fontWeight: 500
-                        }}
-                        itemStyle={{
-                            paddingTop: '4px'
+                            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                            padding: '12px 16px'
                         }}
                     />
 
-                    <Legend
-                        wrapperStyle={{ paddingTop: '20px', fontSize: '13px', fontWeight: 500 }}
-                        iconType="circle"
-                    />
+                    <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
 
-                    <Area
-                        type="monotone"
-                        dataKey="totalDeposited"
-                        fill="url(#colorDeposited)"
-                        stroke={chartColors.stroke}
-                        strokeWidth={2}
-                        name="Eingezahltes Kapital"
-                        isAnimationActive={true}
-                        animationDuration={1500}
-                    />
-                    <Line
-                        type="monotone"
-                        dataKey="nominalValue"
-                        stroke={chartColors.nominal}
-                        strokeWidth={3}
-                        dot={false}
-                        activeDot={{ r: 6, strokeWidth: 0 }}
-                        name="Nominalwert (inkl. Zinsen)"
-                        isAnimationActive={true}
-                        animationDuration={1500}
-                    />
-                    <Line
-                        type="monotone"
-                        dataKey="realValue"
-                        stroke={chartColors.real}
-                        strokeWidth={2}
-                        strokeDasharray="6 6"
-                        dot={false}
-                        name="Realwert (Kaufkraft)"
-                        isAnimationActive={true}
-                        animationDuration={1500}
-                    />
+                    {!isCombined ? (
+                        <>
+                            <Area
+                                type="monotone"
+                                data={data}
+                                dataKey="totalDeposited"
+                                fill="url(#colorDeposited)"
+                                stroke="#3b82f6"
+                                strokeWidth={2}
+                                name="Eingezahltes Kapital"
+                            />
+                            <Line
+                                type="monotone"
+                                data={data}
+                                dataKey="nominalValue"
+                                stroke="#10b981"
+                                strokeWidth={3}
+                                dot={false}
+                                name="Nominalwert"
+                            />
+                            <Line
+                                type="monotone"
+                                data={data}
+                                dataKey="realValue"
+                                stroke="#f59e0b"
+                                strokeWidth={2}
+                                strokeDasharray="6 6"
+                                dot={false}
+                                name="Realwert"
+                            />
+                        </>
+                    ) : (
+                        multiData.map((set) => (
+                            <Line
+                                key={set.name}
+                                data={set.data}
+                                type="monotone"
+                                dataKey="nominalValue"
+                                stroke={set.color}
+                                strokeWidth={3}
+                                dot={false}
+                                name={set.name}
+                                isAnimationActive={true}
+                            />
+                        ))
+                    )}
                 </ComposedChart>
             </ResponsiveContainer>
         </div>

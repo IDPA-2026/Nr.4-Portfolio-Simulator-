@@ -1,4 +1,40 @@
-/* --- Dashboard Layout Fix --- */
+.btn-toggle-view {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-toggle-view.active {
+    background: #8b5cf6;
+    color: white;
+    border-color: #8b5cf6;
+}
+
+.btn-toggle-view:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+select.input-field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+}
+
+.dark select.input-field {
+    background-color: rgba(30, 41, 59, 0.5);
+    color: white;
+}
 
 .dashboard-grid {
     display: grid;
