@@ -1,5 +1,6 @@
 import { Portfolio } from '../types';
 import { useState } from 'react';
+import { Calendar } from 'lucide-react';
 
 interface Props {
     activePortfolio: Portfolio;
@@ -15,6 +16,7 @@ interface Props {
 export interface MergeSettings {
     growthStrategy: 'avg' | string;
     inflationStrategy: 'avg' | string;
+    fusionDate: string;
 }
 
 export default function PortfolioMergePanel({
@@ -29,7 +31,8 @@ export default function PortfolioMergePanel({
                                             }: Props) {
     const [settings, setSettings] = useState<MergeSettings>({
         growthStrategy: 'avg',
-        inflationStrategy: 'avg'
+        inflationStrategy: 'avg',
+        fusionDate: activePortfolio.config.simulationStart
     });
 
     const allPortfoliosInMerge = [activePortfolio, ...availablePortfolios.filter(p => selectedForMerge.includes(p.id))];
@@ -91,6 +94,19 @@ export default function PortfolioMergePanel({
                                 <option key={p.id} value={p.id}>Wert von: {p.name} ({p.config.annualInflationRate}%)</option>
                             ))}
                         </select>
+                    </div>
+
+                    <div>
+                        <label className="input-label">Fusions-Datum (Start)</label>
+                        <div className="date-input-wrapper">
+                            <input
+                                type="month"
+                                className="input-field"
+                                value={settings.fusionDate}
+                                onChange={(e) => setSettings({...settings, fusionDate: e.target.value})}
+                            />
+                            <Calendar size={18} className="date-icon" />
+                        </div>
                     </div>
                 </div>
             </div>

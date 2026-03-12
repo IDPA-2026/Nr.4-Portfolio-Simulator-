@@ -12,7 +12,6 @@ import PortfolioChart from './PortfolioChart';
 import GlassCard from './GlassCard';
 import AllocationChart from './AllocationChart';
 import GlossaryPanel from './GlossaryPanel';
-import { button } from "framer-motion/client";
 
 type TimeRange = '5y' | '10y' | 'max';
 
@@ -126,14 +125,12 @@ export default function PortfolioDashboard() {
     const executeMerge = (settings: MergeSettings) => {
         if (selectedForMerge.length === 0) return;
         const portfoliosToMerge = [activePortfolio, ...portfolios.filter(p => selectedForMerge.includes(p.id))];
-        let minStart = portfoliosToMerge[0].config.simulationStart;
         let maxEnd = portfoliosToMerge[0].config.simulationEnd;
         let totalCapital = 0, allStreams: DepositStream[] = [];
         let allStocks: StockPosition[] = [];
 
         portfoliosToMerge.forEach(p => {
             totalCapital += p.config.initialCapital;
-            if (p.config.simulationStart < minStart) minStart = p.config.simulationStart;
             if (p.config.simulationEnd > maxEnd) maxEnd = p.config.simulationEnd;
             allStreams = [...allStreams, ...p.config.depositStreams.map(s => ({ ...s, id: crypto.randomUUID() }))];
             allStocks = [...allStocks, ...(p.config.stocks || []).map(s => ({ ...s, id: crypto.randomUUID() }))];
@@ -157,7 +154,7 @@ export default function PortfolioDashboard() {
                 usdToChfRate: portfoliosToMerge[0].config.usdToChfRate,
                 annualGrowthRate: getRate(settings.growthStrategy, 'annualGrowthRate'),
                 annualInflationRate: getRate(settings.inflationStrategy, 'annualInflationRate'),
-                simulationStart: minStart,
+                simulationStart: settings.fusionDate,
                 simulationEnd: maxEnd,
                 depositStreams: allStreams,
                 stocks: allStocks
