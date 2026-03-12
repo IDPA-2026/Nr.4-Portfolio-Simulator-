@@ -32,7 +32,7 @@ export default function StockSearchInputs({ stocks, onAdd, onRemove, onUpdateSha
             setGrowthToAdd(8);
         } else {
             setSearchResult(null);
-            setError('Aktie nicht gefunden. Bitte Symbol überprüfen (z.B. AAPL).');
+            setError('Aktie nicht gefunden. Bitte Symbol überprüfen.');
         }
         setIsLoading(false);
     };
@@ -91,6 +91,11 @@ export default function StockSearchInputs({ stocks, onAdd, onRemove, onUpdateSha
                         {isLoading ? '...' : 'Suchen'}
                     </button>
                 </div>
+
+                <div style={{ fontSize: '0.7rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                    <strong>Beliebte Aktien:</strong> AAPL (Apple), MSFT (Microsoft), NVDA (Nvidia), TSLA (Tesla), AMZN (Amazon)
+                </div>
+
                 {error && <p style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.5rem' }}>{error}</p>}
             </div>
 
@@ -119,7 +124,7 @@ export default function StockSearchInputs({ stocks, onAdd, onRemove, onUpdateSha
                                             <Info size={14} />
                                             Abstand zum Jahreshoch: {drawdown}%
                                             <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>
-                                                (Hinweis: {parseFloat(drawdown) < -15 ? "Möglicher Rabatt/Kauf-Chance" : "Aktie nahe am Höchststand"})
+                                                ({parseFloat(drawdown) < -15 ? "Möglicher Rabatt" : "Nahe am Höchststand"})
                                             </span>
                                         </div>
                                     )}
@@ -130,11 +135,11 @@ export default function StockSearchInputs({ stocks, onAdd, onRemove, onUpdateSha
 
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
                         <div className="input-group" style={{ flex: 1, margin: 0 }}>
-                            <label className="input-label" style={{ fontSize: '0.75rem' }}>Anzahl (Stück)</label>
+                            <label className="input-label" style={{ fontSize: '0.75rem' }}>Anzahl</label>
                             <input type="number" min="0.1" step="0.1" value={sharesToAdd} onChange={e => setSharesToAdd(Number(e.target.value))} className="input-field" />
                         </div>
                         <div className="input-group" style={{ flex: 1, margin: 0 }}>
-                            <label className="input-label" style={{ fontSize: '0.75rem' }}>Wachstum p.a. (%)</label>
+                            <label className="input-label" style={{ fontSize: '0.75rem' }}>Wachstum %</label>
                             <input type="number" step="0.1" value={growthToAdd} onChange={e => setGrowthToAdd(Number(e.target.value))} className="input-field" />
                         </div>
                         <button onClick={handleAdd} className="btn-confirm" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>

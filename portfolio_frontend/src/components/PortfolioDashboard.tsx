@@ -1,6 +1,6 @@
 import { useState, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, GitMerge, Trash2, Settings2, BarChart3, LayoutDashboard, Clock, PieChart as PieChartIcon } from 'lucide-react';
+import { TrendingUp, GitMerge, Trash2, Settings2, BarChart3, LayoutDashboard, Clock, PieChart as PieChartIcon, BookOpen, Download } from 'lucide-react';
 
 import { Portfolio, PortfolioConfig, DepositStream, StockPosition } from '../types';
 import { calculatePortfolio } from '../utils/calculator';
@@ -11,26 +11,42 @@ import PortfolioInputs from './PortfolioInputs';
 import PortfolioChart from './PortfolioChart';
 import GlassCard from './GlassCard';
 import AllocationChart from './AllocationChart';
+import GlossaryPanel from './GlossaryPanel';
+import { button } from "framer-motion/client";
 
 type TimeRange = '5y' | '10y' | 'max';
 
-// 1. Die DashboardChart Komponente ist wieder EXAKT so wie früher (nur für das Liniendiagramm)
 const DashboardChart = memo(({ portfolio, isCompareMode, timeRange }: { portfolio: Portfolio, isCompareMode: boolean, timeRange: TimeRange }) => {
-    const data = useMemo(() => {
+    const { timeSeries, allocation } = useMemo(() => {
         const result = calculatePortfolio(portfolio.config);
-        if (timeRange === 'max') return result.timeSeries;
-        const months = timeRange === '5y' ? 60 : 120;
-        return result.timeSeries.slice(0, months);
+        let slicedSeries = result.timeSeries;
+        if (timeRange !== 'max') {
+            const months = timeRange === '5y' ? 60 : 120;
+            slicedSeries = result.timeSeries.slice(0, months);
+        }
+        return { timeSeries: slicedSeries, allocation: result.allocation };
     }, [portfolio.config, timeRange]);
 
     return (
-        <GlassCard>
-            <div className="card-header-small">
-                <BarChart3 size={20} />
-                <h3>{isCompareMode ? portfolio.name : 'Vermögensentwicklung'}</h3>
-            </div>
-            <PortfolioChart data={data} />
-        </GlassCard>
+        <>
+            <GlassCard>
+                <div className="card-header-small">
+                    <BarChart3 size={20} />
+                    <h3>{isCompareMode ? portfolio.name : 'Vermögensentwicklung'}</h3>
+                </div>
+                <PortfolioChart data={timeSeries} />
+            </GlassCard>
+
+            {allocation && allocation.length > 0 && (
+                <GlassCard>
+                    <div className="card-header-small">
+                        <PieChartIcon size={20} />
+                        <h3>{isCompareMode ? `Allocation: ${portfolio.name}` : 'Aktuelle Asset Allocation'}</h3>
+                    </div>
+                    <AllocationChart data={allocation} currency={portfolio.config.baseCurrency} />
+                </GlassCard>
+            )}
+        </>
     );
 });
 
@@ -61,12 +77,9 @@ export default function PortfolioDashboard() {
     const [compareIds, setCompareIds] = useState<string[]>([]);
     const [isCombinedView, setIsCombinedView] = useState<boolean>(false);
 
-    const activePortfolio = portfolios.find(p => p.id === activePortfolioId) || portfolios[0];
+    const [showGlossary, setShowGlossary] = useState<boolean>(false);
 
-    // Berechnung für das Allocation Chart des aktiven Portfolios (wird nur im Single-Mode gezeigt)
-    const activeAllocation = useMemo(() => {
-        return calculatePortfolio(activePortfolio.config).allocation;
-    }, [activePortfolio.config]);
+    const activePortfolio = portfolios.find(p => p.id === activePortfolioId) || portfolios[0];
 
     const updateActiveConfig = (newConfig: PortfolioConfig) => {
         setPortfolios(portfolios.map(p => p.id === activePortfolioId ? { ...p, config: newConfig } : p));
@@ -91,12 +104,23 @@ export default function PortfolioDashboard() {
         resetModes();
     };
 
+    const exportConfig = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activePortfolio, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `${activePortfolio.name.replace(/\s+/g, '_')}_export.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
     const resetModes = () => {
         setShowMerge(false);
         setSelectedForMerge([]);
         setDeleteOriginals(false);
         setIsCompareMode(false);
         setIsCombinedView(false);
+        setShowGlossary(false);
     };
 
     const executeMerge = (settings: MergeSettings) => {
@@ -168,8 +192,13 @@ export default function PortfolioDashboard() {
                     <h1>WealthView</h1>
                     <p className="dashboard-subtitle">Strategische Finanzplanung (Stand: 2026)</p>
                 </motion.div>
-                <div className="tabs-wrapper">
-                    <PortfolioTabs portfolios={portfolios} activePortfolioId={activePortfolioId} onSelect={(id) => { setActivePortfolioId(id); resetModes(); }} onAdd={addPortfolio} />
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <button onClick={() => setShowGlossary(!showGlossary)} className="btn-filter" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <BookOpen size={16} /> Glossar
+                    </button>
+                    <div className="tabs-wrapper">
+                        <PortfolioTabs portfolios={portfolios} activePortfolioId={activePortfolioId} onSelect={(id) => { setActivePortfolioId(id); resetModes(); }} onAdd={addPortfolio} />
+                    </div>
                 </div>
             </header>
 
@@ -181,18 +210,32 @@ export default function PortfolioDashboard() {
                                 <div className="icon-wrapper"><TrendingUp size={24} /></div>
                                 <input type="text" value={activePortfolio.name} onChange={(e) => updatePortfolioName(e.target.value)} className="portfolio-name-input" />
                             </div>
-                            <div className="action-buttons">
+                            <div className="action-buttons" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                <button onClick={exportConfig} className="btn-compare" style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <Download size={16} /> JSON Export
+                                </button>
                                 {portfolios.length > 1 && (
                                     <>
-                                        <button onClick={() => { setIsCompareMode(!isCompareMode); setCompareIds([activePortfolioId]); }} className={`btn-compare ${isCompareMode ? 'active' : ''}`}><LayoutDashboard size={18} />Vergleichen</button>
-                                        <button onClick={() => setShowMerge(!showMerge)} className={`btn-merge ${showMerge ? 'active' : ''}`}><GitMerge size={18} />Fusionieren</button>
+                                        <button onClick={() => { setIsCompareMode(!isCompareMode); setCompareIds([activePortfolioId]); }} className={`btn-compare ${isCompareMode ? 'active' : ''}`} style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <LayoutDashboard size={16} /> Vergleichen
+                                        </button>
+                                        <button onClick={() => setShowMerge(!showMerge)} className={`btn-merge ${showMerge ? 'active' : ''}`} style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <GitMerge size={16} /> Fusionieren
+                                        </button>
                                     </>
                                 )}
-                                <button onClick={deleteActivePortfolio} className="btn-delete"><Trash2 size={20} /></button>
+                                <button onClick={deleteActivePortfolio} className="btn-delete" style={{ flexShrink: 0 }}>
+                                    <Trash2 size={20} />
+                                </button>
                             </div>
                         </div>
 
                         <AnimatePresence>
+                            {showGlossary && (
+                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="merge-panel-wrapper">
+                                    <GlossaryPanel onClose={() => setShowGlossary(false)} />
+                                </motion.div>
+                            )}
                             {showMerge && (
                                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="merge-panel-wrapper">
                                     <PortfolioMergePanel activePortfolio={activePortfolio} availablePortfolios={portfolios.filter(p => p.id !== activePortfolioId)} selectedForMerge={selectedForMerge} setSelectedForMerge={setSelectedForMerge} deleteOriginals={deleteOriginals} setDeleteOriginals={setDeleteOriginals} onCancel={() => setShowMerge(false)} onConfirm={executeMerge} />
@@ -231,17 +274,6 @@ export default function PortfolioDashboard() {
                             displayPortfolios.map(p => (
                                 <DashboardChart key={p.id} portfolio={p} isCompareMode={isCompareMode} timeRange={timeRange} />
                             ))
-                        )}
-
-                        {/* 2. Das Allocation Chart ist jetzt ein eigenständiger Block im Grid (nur im Single-Mode) */}
-                        {!isCompareMode && activeAllocation && activeAllocation.length > 0 && (
-                            <GlassCard>
-                                <div className="card-header-small">
-                                    <PieChartIcon size={20} />
-                                    <h3>Aktuelle Asset Allocation</h3>
-                                </div>
-                                <AllocationChart data={activeAllocation} currency={activePortfolio.config.baseCurrency} />
-                            </GlassCard>
                         )}
                     </div>
                 </div>
