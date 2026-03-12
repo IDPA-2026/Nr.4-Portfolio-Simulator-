@@ -13,6 +13,7 @@ export interface StockPosition {
     shares: number;
     price: number;
     currency: string;
+    expectedGrowth: number;
 }
 
 export interface PortfolioConfig {
@@ -22,7 +23,7 @@ export interface PortfolioConfig {
     simulationStart: string;
     simulationEnd: string;
     depositStreams: DepositStream[];
-    stocks: StockPosition[]; // NEU: Aktien-Array hinzugefügt
+    stocks: StockPosition[];
 }
 
 export interface Portfolio {

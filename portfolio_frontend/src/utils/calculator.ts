@@ -6,13 +6,13 @@ export function calculatePortfolio(config: PortfolioConfig): ChartDataPoint[] {
     const monthlyGrowthMultiplier = Math.pow(1 + (config.annualGrowthRate / 100), 1 / 12);
     const monthlyInflationMultiplier = Math.pow(1 + (config.annualInflationRate / 100), 1 / 12);
 
-    // Aktienwert berechnen und zum Startkapital addieren
-    const stockValue = (config.stocks || []).reduce((sum, stock) => {
-        return sum + (stock.price * stock.shares);
-    }, 0);
+    const stockTrackers = (config.stocks || []).map(stock => ({
+        currentValue: stock.price * stock.shares,
+        monthlyMultiplier: Math.pow(1 + (stock.expectedGrowth / 100), 1 / 12)
+    }));
 
-    let currentNominalCapital = config.initialCapital + stockValue;
-    let currentTotalDeposited = config.initialCapital + stockValue;
+    let currentCash = config.initialCapital;
+    let currentTotalDeposited = config.initialCapital + stockTrackers.reduce((sum, s) => sum + s.currentValue, 0);
     let cumulativeInflation = 1;
 
     let [currentYear, currentMonth] = config.simulationStart.split('-').map(Number);
@@ -29,10 +29,16 @@ export function calculatePortfolio(config: PortfolioConfig): ChartDataPoint[] {
             }
         }
 
-        currentNominalCapital = currentNominalCapital * monthlyGrowthMultiplier;
-        currentNominalCapital += monthlyDeposit;
+        currentCash = (currentCash * monthlyGrowthMultiplier) + monthlyDeposit;
         currentTotalDeposited += monthlyDeposit;
 
+        let totalStockValue = 0;
+        stockTrackers.forEach(tracker => {
+            tracker.currentValue *= tracker.monthlyMultiplier;
+            totalStockValue += tracker.currentValue;
+        });
+
+        const currentNominalCapital = currentCash + totalStockValue;
         cumulativeInflation = cumulativeInflation * monthlyInflationMultiplier;
         const currentRealCapital = currentNominalCapital / cumulativeInflation;
 
