@@ -29,17 +29,16 @@ export default function PortfolioComparePanel({
     };
 
     return (
-        <div className="merge-panel" style={{ backgroundColor: 'rgba(139, 92, 246, 0.05)', borderColor: 'rgba(139, 92, 246, 0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 className="merge-title" style={{ color: '#8b5cf6' }}>
+        <div className="merge-panel compare-panel-wrapper">
+            <div className="compare-header">
+                <h3 className="merge-title compare-title">
                     Portfolios auswählen zum Vergleichen
                 </h3>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div className="compare-controls">
                     <button
-                        className={`btn-toggle-view ${isCombinedView ? 'active' : ''}`}
+                        className={`btn-toggle-view compare-btn-toggle ${isCombinedView ? 'active' : ''}`}
                         onClick={() => setIsCombinedView(!isCombinedView)}
-                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}
                     >
                         {isCombinedView ? <Zap size={14} /> : <Layers size={14} />}
                         {isCombinedView ? "Einzelansicht" : "Kombiniert"}
@@ -55,10 +54,9 @@ export default function PortfolioComparePanel({
                     <label key={p.id} className="merge-item">
                         <input
                             type="checkbox"
-                            className="merge-checkbox"
+                            className="merge-checkbox compare-checkbox"
                             checked={compareIds.includes(p.id)}
                             onChange={() => toggleId(p.id)}
-                            style={{ accentColor: '#8b5cf6' }}
                         />
                         <span className="merge-item-text">{p.name}</span>
                     </label>

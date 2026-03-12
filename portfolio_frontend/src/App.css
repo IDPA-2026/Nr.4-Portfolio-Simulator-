@@ -71,6 +71,7 @@
     border-color: var(--primary);
     color: var(--primary);
 }
+
 select.input-field {
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
@@ -89,29 +90,26 @@ select.input-field {
     display: grid;
     grid-template-columns: 1fr;
     gap: 2rem;
-    align-items: stretch; /* Sorgt dafür, dass linke und rechte Spalte gleich hoch werden */
+    align-items: stretch;
 }
 
 .dashboard-main, .dashboard-sidebar {
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    height: 100%; /* Füllt die gedehnte Spalte aus */
+    height: 100%;
 }
 
-/* Die Sidebar (rechts) soll die volle Höhe nutzen */
 .dashboard-sidebar .glass-card {
     height: 100%;
 }
 
-/* Die Chart-Card (links unten) soll den restlichen Platz einnehmen */
 .dashboard-main .glass-card:last-child {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-/* Der Chart-Container passt sich flexibel an, statt starr 500px zu sein */
 .chart-container {
     width: 100%;
     flex: 1;
@@ -121,6 +119,7 @@ select.input-field {
     border-radius: 0.5rem;
     border: 1px solid var(--border-color);
 }
+
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -131,7 +130,6 @@ input[type="number"] {
     -moz-appearance: textfield;
 }
 
-/* --- Kalender Styling --- */
 .date-input-wrapper {
     position: relative;
     display: flex;
@@ -140,13 +138,11 @@ input[type="number"] {
 }
 
 .date-input-wrapper input[type="month"] {
-    padding-right: 2.5rem; /* Platz für das Icon machen */
+    padding-right: 2.5rem;
     width: 100%;
-    /* Cursor nur in Browsern auf Pointer setzen, die den Picker unterstützen */
     cursor: text;
 }
 
-/* Zieht die Klick-Fläche über das ganze Feld (für Chrome/Safari/Edge) */
 .date-input-wrapper input[type="month"]::-webkit-calendar-picker-indicator {
     position: absolute;
     top: 0;
@@ -161,8 +157,9 @@ input[type="number"] {
     position: absolute;
     right: 0.75rem;
     color: var(--text-muted);
-    pointer-events: none; /* Klicks gehen durch das Icon hindurch */
+    pointer-events: none;
 }
+
 .recharts-cartesian-grid-horizontal line {
     stroke-opacity: 0.5;
 }
@@ -262,17 +259,6 @@ body {
     --stream-bg: #0f172a;
     --card-bg: rgba(30, 41, 59, 0.4);
     --border-color: #334155;
-}
-
-body {
-    background: var(--bg-gradient);
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    font-family: 'Inter', system-ui, sans-serif;
-    margin: 0;
-    min-height: 100vh;
-    transition: background 0.5s ease, color 0.5s ease;
-    -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -380,28 +366,14 @@ body {
 @media (min-width: 1280px) {
     .dashboard-grid {
         grid-template-columns: repeat(12, 1fr);
-        gap: 1.5rem; /* Lücke zwischen Graph und Konfiguration etwas verkleinert (vorher 2rem) */
+        gap: 1.5rem;
     }
     .dashboard-main {
-        grid-column: span 7; /* Linke Seite etwas schmaler gemacht (vorher 8) */
+        grid-column: span 7;
     }
     .dashboard-sidebar {
-        grid-column: span 5; /* Rechte Seite etwas breiter gemacht (vorher 4) */
+        grid-column: span 5;
     }
-}
-
-/* Reduziert auch den vertikalen Abstand zwischen den Boxen auf der linken Seite, damit alles einheitlicher wirkt */
-.dashboard-main, .dashboard-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    height: 100%;
-}
-
-.dashboard-main, .dashboard-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
 }
 
 .glass-card {
@@ -663,15 +635,6 @@ body {
     background-color: var(--primary-hover);
 }
 
-.chart-container {
-    width: 100%;
-    height: 500px;
-    background-color: var(--chart-bg);
-    padding: 1.25rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--border-color);
-}
-
 .tabs-wrapper {
     width: 100%;
     overflow: hidden;
@@ -916,12 +879,10 @@ body {
     color: var(--text-main) !important;
 }
 
-
 .recharts-tooltip-item {
     color: var(--text-main) !important;
 }
 
-/* --- Compare Feature Styling --- */
 .btn-compare {
     display: flex;
     align-items: center;
@@ -942,13 +903,12 @@ body {
 }
 
 .btn-compare.active {
-    background: #8b5cf6; /* Lila Akzentfarbe für Compare */
+    background: #8b5cf6;
     color: #ffffff;
     border-color: #8b5cf6;
     box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.39);
 }
 
-/* Dynamisches Grid für Side-by-Side Charts */
 .dashboard-main .charts-grid {
     flex: 1;
     display: grid;
@@ -957,7 +917,6 @@ body {
     align-items: stretch;
 }
 
-/* Wenn Compare aktiv ist und Platz da ist, mach 2 (oder mehr) Spalten nebeneinander */
 .charts-grid.compare-active {
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
 }
@@ -967,3 +926,60 @@ body {
     flex-direction: column;
     height: 100%;
 }
+
+.allocation-empty { display: flex; justify-content: center; align-items: center; height: 100%; color: #6b7280; }
+.allocation-label { font-size: 12px; font-weight: bold; }
+.allocation-wrapper { width: 100%; height: 300px; }
+.glossary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.glossary-title-margin { margin: 0; }
+.glossary-close-btn { padding: 0.2rem 0.5rem; }
+.glossary-list { display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem; }
+.glossary-item { padding: 0.75rem; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color); }
+.glossary-item-title-cap { display: block; margin-bottom: 0.25rem; color: #3b82f6; text-transform: capitalize; }
+.glossary-item-title { display: block; margin-bottom: 0.25rem; color: #3b82f6; }
+.glossary-item-text { font-size: 0.85rem; color: var(--text-main); }
+.compare-panel-wrapper { background-color: rgba(139, 92, 246, 0.05); border-color: rgba(139, 92, 246, 0.2); }
+.compare-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.compare-title { color: #8b5cf6; }
+.compare-controls { display: flex; align-items: center; gap: 1rem; }
+.compare-btn-toggle { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
+.compare-checkbox { accent-color: #8b5cf6; }
+.dashboard-header-controls { display: flex; gap: 1rem; align-items: center; }
+.dashboard-filter-btn { display: flex; align-items: center; gap: 0.5rem; }
+.dashboard-action-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem; }
+.dashboard-btn-compare { white-space: nowrap; display: flex; align-items: center; gap: 0.5rem; }
+.dashboard-btn-delete-shrink { flex-shrink: 0; }
+.merge-grid-gap { gap: 1.5rem; margin-bottom: 1.5rem; }
+.merge-group-gap { gap: 1rem; }
+.merge-actions-wrapper { display: flex; gap: 0.75rem; }
+.stock-search-section { margin-bottom: 1rem; }
+.stock-input-group { flex: 1; margin: 0; }
+.stock-input-wrapper { position: relative; display: flex; align-items: center; }
+.stock-search-icon { position: absolute; left: 10px; color: #6b7280; }
+.stock-search-input { padding-left: 35px; }
+.stock-btn-search { padding: 0 1rem; }
+.stock-hint { font-size: 0.7rem; color: #6b7280; margin-top: 0.5rem; }
+.stock-error { color: #ef4444; font-size: 0.8rem; margin-top: 0.5rem; }
+.stock-result-card { padding: 1rem; background: rgba(59, 130, 246, 0.05); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.2); margin-bottom: 1.5rem; }
+.stock-result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+.stock-result-title { font-weight: bold; margin: 0; }
+.stock-result-price-wrapper { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem; }
+.stock-result-price { font-size: 1.25rem; font-weight: bold; }
+.stock-result-change-pos { color: #10b981; display: flex; align-items: center; font-size: 0.875rem; }
+.stock-result-change-neg { color: #ef4444; display: flex; align-items: center; font-size: 0.875rem; }
+.stock-result-stats { margin-top: 0.5rem; font-size: 0.8rem; color: #6b7280; display: flex; flex-direction: column; gap: 0.25rem; }
+.stock-result-drawdown { display: flex; align-items: center; gap: 4px; }
+.stock-result-drawdown-hint { font-size: 0.7rem; opacity: 0.8; }
+.stock-add-inputs { display: flex; gap: 0.5rem; align-items: flex-end; }
+.stock-add-label { font-size: 0.75rem; }
+.stock-add-btn { display: flex; align-items: center; gap: 0.25rem; }
+.stock-list { max-height: 250px; overflow-y: auto; padding-right: 0.5rem; }
+.stock-item-wrapper { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.5rem; }
+.stock-item-header { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+.stock-item-tag { font-size: 0.75rem; color: #8b5cf6; background: rgba(139, 92, 246, 0.1); padding: 2px 6px; border-radius: 4px; }
+.stock-item-text { font-size: 0.75rem; color: #6b7280; margin-top: 4px; }
+.stock-item-controls { display: flex; align-items: center; gap: 1rem; }
+.stock-item-input-wrapper { display: flex; flex-direction: column; align-items: flex-end; }
+.stock-item-input { width: 70px; padding: 0.25rem; text-align: right; }
+.stock-item-span { font-size: 0.7rem; color: #6b7280; margin-top: 0.2rem; }
+.stock-item-delete-btn { color: #ef4444; background: none; border: none; cursor: pointer; }

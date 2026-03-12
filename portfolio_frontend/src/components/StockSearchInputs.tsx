@@ -71,59 +71,58 @@ export default function StockSearchInputs({ stocks, onAdd, onRemove, onUpdateSha
                 <h2 className="config-card-title">Aktien Portfolio</h2>
             </div>
 
-            <div className="search-section" style={{ marginBottom: '1rem' }}>
+            <div className="search-section stock-search-section">
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <div className="input-group" style={{ flex: 1, margin: 0 }}>
-                        <div className="input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                            <Search size={18} style={{ position: 'absolute', left: '10px', color: '#6b7280' }} />
+                    <div className="input-group stock-input-group">
+                        <div className="input-wrapper stock-input-wrapper">
+                            <Search size={18} className="stock-search-icon" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                                className="input-field"
+                                className="input-field stock-search-input"
                                 placeholder="Symbol (z.B. AAPL)"
-                                style={{ paddingLeft: '35px' }}
                             />
                         </div>
                     </div>
-                    <button onClick={handleSearch} disabled={isLoading} className="btn-confirm" style={{ padding: '0 1rem' }}>
+                    <button onClick={handleSearch} disabled={isLoading} className="btn-confirm stock-btn-search">
                         {isLoading ? '...' : 'Suchen'}
                     </button>
                 </div>
 
-                <div style={{ fontSize: '0.7rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                <div className="stock-hint">
                     <strong>Beliebte Aktien:</strong> AAPL (Apple), MSFT (Microsoft), NVDA (Nvidia), TSLA (Tesla), AMZN (Amazon)
                 </div>
 
-                {error && <p style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.5rem' }}>{error}</p>}
+                {error && <p className="stock-error">{error}</p>}
             </div>
 
             {searchResult && searchResult.close && (
-                <div className="search-result-card" style={{ padding: '1rem', background: 'rgba(59, 130, 246, 0.05)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)', marginBottom: '1.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <div className="search-result-card stock-result-card">
+                    <div className="stock-result-header">
                         <div>
-                            <h4 style={{ fontWeight: 'bold', margin: 0 }}>{searchResult.name} ({searchResult.symbol})</h4>
+                            <h4 className="stock-result-title">{searchResult.name} ({searchResult.symbol})</h4>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-                                <span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
+                            <div className="stock-result-price-wrapper">
+                                <span className="stock-result-price">
                                     {parseFloat(searchResult.close).toFixed(2)} {searchResult.currency}
                                 </span>
                                 {parseFloat(searchResult.percent_change) >= 0 ? (
-                                    <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', fontSize: '0.875rem' }}><TrendingUp size={14} /> +{parseFloat(searchResult.percent_change).toFixed(2)}%</span>
+                                    <span className="stock-result-change-pos"><TrendingUp size={14} /> +{parseFloat(searchResult.percent_change).toFixed(2)}%</span>
                                 ) : (
-                                    <span style={{ color: '#ef4444', display: 'flex', alignItems: 'center', fontSize: '0.875rem' }}><TrendingDown size={14} /> {parseFloat(searchResult.percent_change).toFixed(2)}%</span>
+                                    <span className="stock-result-change-neg"><TrendingDown size={14} /> {parseFloat(searchResult.percent_change).toFixed(2)}%</span>
                                 )}
                             </div>
 
                             {searchResult.fifty_two_week && (
-                                <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#6b7280', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                <div className="stock-result-stats">
                                     <div><strong>52W Low:</strong> {parseFloat(searchResult.fifty_two_week.low).toFixed(2)} | <strong>52W High:</strong> {parseFloat(searchResult.fifty_two_week.high).toFixed(2)}</div>
                                     {drawdown && (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: parseFloat(drawdown) < -15 ? '#10b981' : '#f59e0b' }}>
+                                        <div className="stock-result-drawdown" style={{ color: parseFloat(drawdown) < -15 ? '#10b981' : '#f59e0b' }}>
                                             <Info size={14} />
                                             Abstand zum Jahreshoch: {drawdown}%
-                                            <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>
+                                            <span className="stock-result-drawdown-hint">
                                                 ({parseFloat(drawdown) < -15 ? "Möglicher Rabatt" : "Nahe am Höchststand"})
                                             </span>
                                         </div>
@@ -133,46 +132,45 @@ export default function StockSearchInputs({ stocks, onAdd, onRemove, onUpdateSha
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
-                        <div className="input-group" style={{ flex: 1, margin: 0 }}>
-                            <label className="input-label" style={{ fontSize: '0.75rem' }}>Anzahl</label>
+                    <div className="stock-add-inputs">
+                        <div className="input-group stock-input-group">
+                            <label className="input-label stock-add-label">Anzahl</label>
                             <input type="number" min="0.1" step="0.1" value={sharesToAdd} onChange={e => setSharesToAdd(Number(e.target.value))} className="input-field" />
                         </div>
-                        <div className="input-group" style={{ flex: 1, margin: 0 }}>
-                            <label className="input-label" style={{ fontSize: '0.75rem' }}>Wachstum %</label>
+                        <div className="input-group stock-input-group">
+                            <label className="input-label stock-add-label">Wachstum %</label>
                             <input type="number" step="0.1" value={growthToAdd} onChange={e => setGrowthToAdd(Number(e.target.value))} className="input-field" />
                         </div>
-                        <button onClick={handleAdd} className="btn-confirm" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <button onClick={handleAdd} className="btn-confirm stock-add-btn">
                             <Plus size={16} /> Hinzufügen
                         </button>
                     </div>
                 </div>
             )}
 
-            <div className="stocks-list" style={{ maxHeight: '250px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+            <div className="stocks-list stock-list">
                 {stocks.map(stock => (
-                    <div key={stock.id} className="stream-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '8px', marginBottom: '0.5rem' }}>
+                    <div key={stock.id} className="stream-item stock-item-wrapper">
                         <div>
-                            <div style={{ fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div className="stock-item-header">
                                 {stock.symbol}
-                                <span style={{ fontSize: '0.75rem', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                <span className="stock-item-tag">
                                     {stock.expectedGrowth}% p.a.
                                 </span>
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '4px' }}>{stock.price} {stock.currency} / Stück</div>
+                            <div className="stock-item-text">{stock.price} {stock.currency} / Stück</div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                        <div className="stock-item-controls">
+                            <div className="stock-item-input-wrapper">
                                 <input
                                     type="number"
                                     value={stock.shares}
                                     onChange={e => onUpdateShares(stock.id, Number(e.target.value))}
-                                    className="input-field"
-                                    style={{ width: '70px', padding: '0.25rem', textAlign: 'right' }}
+                                    className="input-field stock-item-input"
                                 />
-                                <span style={{ fontSize: '0.7rem', color: '#6b7280', marginTop: '0.2rem' }}>Stück</span>
+                                <span className="stock-item-span">Stück</span>
                             </div>
-                            <button onClick={() => onRemove(stock.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>
+                            <button onClick={() => onRemove(stock.id)} className="stock-item-delete-btn">
                                 <Trash2 size={18} />
                             </button>
                         </div>

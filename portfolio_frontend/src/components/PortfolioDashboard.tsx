@@ -192,8 +192,8 @@ export default function PortfolioDashboard() {
                     <h1>WealthView</h1>
                     <p className="dashboard-subtitle">Strategische Finanzplanung (Stand: 2026)</p>
                 </motion.div>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <button onClick={() => setShowGlossary(!showGlossary)} className="btn-filter" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div className="dashboard-header-controls">
+                    <button onClick={() => setShowGlossary(!showGlossary)} className="btn-filter dashboard-filter-btn">
                         <BookOpen size={16} /> Glossar
                     </button>
                     <div className="tabs-wrapper">
@@ -210,21 +210,21 @@ export default function PortfolioDashboard() {
                                 <div className="icon-wrapper"><TrendingUp size={24} /></div>
                                 <input type="text" value={activePortfolio.name} onChange={(e) => updatePortfolioName(e.target.value)} className="portfolio-name-input" />
                             </div>
-                            <div className="action-buttons" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                                <button onClick={exportConfig} className="btn-compare" style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div className="action-buttons dashboard-action-buttons">
+                                <button onClick={exportConfig} className="btn-compare dashboard-btn-compare">
                                     <Download size={16} /> JSON Export
                                 </button>
                                 {portfolios.length > 1 && (
                                     <>
-                                        <button onClick={() => { setIsCompareMode(!isCompareMode); setCompareIds([activePortfolioId]); }} className={`btn-compare ${isCompareMode ? 'active' : ''}`} style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <button onClick={() => { setIsCompareMode(!isCompareMode); setCompareIds([activePortfolioId]); }} className={`btn-compare dashboard-btn-compare ${isCompareMode ? 'active' : ''}`}>
                                             <LayoutDashboard size={16} /> Vergleichen
                                         </button>
-                                        <button onClick={() => setShowMerge(!showMerge)} className={`btn-merge ${showMerge ? 'active' : ''}`} style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <button onClick={() => setShowMerge(!showMerge)} className={`btn-merge dashboard-btn-compare ${showMerge ? 'active' : ''}`}>
                                             <GitMerge size={16} /> Fusionieren
                                         </button>
                                     </>
                                 )}
-                                <button onClick={deleteActivePortfolio} className="btn-delete" style={{ flexShrink: 0 }}>
+                                <button onClick={deleteActivePortfolio} className="btn-delete dashboard-btn-delete-shrink">
                                     <Trash2 size={20} />
                                 </button>
                             </div>

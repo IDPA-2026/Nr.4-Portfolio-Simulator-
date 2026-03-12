@@ -19,7 +19,7 @@ export default function AllocationChart({ data, currency }: Props) {
     }, []);
 
     if (!data || data.length === 0) {
-        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#6b7280' }}>Keine Assets vorhanden</div>;
+        return <div className="allocation-empty">Keine Assets vorhanden</div>;
     }
 
     const totalValue = data.reduce((sum, item) => sum + item.value, 0);
@@ -31,14 +31,14 @@ export default function AllocationChart({ data, currency }: Props) {
         const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
 
         return (
-            <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" style={{ fontSize: '12px', fontWeight: 'bold' }}>
+            <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" className="allocation-label">
                 {`${(percent * 100).toFixed(0)}%`}
             </text>
         );
     };
 
     return (
-        <div style={{ width: '100%', height: '300px' }}>
+        <div className="allocation-wrapper">
             <ResponsiveContainer>
                 <PieChart>
                     <Pie

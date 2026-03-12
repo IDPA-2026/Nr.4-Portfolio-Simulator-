@@ -13,7 +13,7 @@ interface Props {
 }
 
 export interface MergeSettings {
-    growthStrategy: 'avg' | string; // 'avg' oder Portfolio-ID
+    growthStrategy: 'avg' | string;
     inflationStrategy: 'avg' | string;
 }
 
@@ -40,8 +40,7 @@ export default function PortfolioMergePanel({
                 Portfolios zusammenführen
             </h3>
 
-            <div className="input-grid-2" style={{ gap: '1.5rem', marginBottom: '1.5rem' }}>
-                {/* Portfolio Auswahl */}
+            <div className="input-grid-2 merge-grid-gap">
                 <div className="input-group">
                     <label className="input-label">Inkludierte Portfolios</label>
                     <div className="merge-list">
@@ -65,8 +64,7 @@ export default function PortfolioMergePanel({
                     </div>
                 </div>
 
-                {/* Strategie Auswahl */}
-                <div className="input-group" style={{ gap: '1rem' }}>
+                <div className="input-group merge-group-gap">
                     <div>
                         <label className="input-label">Wachstumsrate (Zinsen)</label>
                         <select
@@ -108,7 +106,7 @@ export default function PortfolioMergePanel({
                     <span className="merge-delete-text">Originale nach Merge löschen</span>
                 </label>
 
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <div className="merge-actions-wrapper">
                     <button onClick={onCancel} className="btn-cancel">Abbrechen</button>
                     <button
                         onClick={() => onConfirm(settings)}
