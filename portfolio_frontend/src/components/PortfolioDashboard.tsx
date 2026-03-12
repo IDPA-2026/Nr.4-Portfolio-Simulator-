@@ -1,8 +1,8 @@
 import { useState, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, GitMerge, Trash2, Settings2, BarChart3, LayoutDashboard, Clock } from 'lucide-react';
+import { TrendingUp, GitMerge, Trash2, Settings2, BarChart3, LayoutDashboard, Clock, PieChart as PieChartIcon } from 'lucide-react';
 
-import {Portfolio, PortfolioConfig, DepositStream, StockPosition} from '../types';
+import { Portfolio, PortfolioConfig, DepositStream, StockPosition } from '../types';
 import { calculatePortfolio } from '../utils/calculator';
 import PortfolioTabs from './PortfolioTabs';
 import PortfolioMergePanel, { MergeSettings } from './PortfolioMergePanel';
@@ -10,15 +10,17 @@ import PortfolioComparePanel from './PortfolioComparePanel';
 import PortfolioInputs from './PortfolioInputs';
 import PortfolioChart from './PortfolioChart';
 import GlassCard from './GlassCard';
+import AllocationChart from './AllocationChart';
 
 type TimeRange = '5y' | '10y' | 'max';
 
+// 1. Die DashboardChart Komponente ist wieder EXAKT so wie früher (nur für das Liniendiagramm)
 const DashboardChart = memo(({ portfolio, isCompareMode, timeRange }: { portfolio: Portfolio, isCompareMode: boolean, timeRange: TimeRange }) => {
     const data = useMemo(() => {
-        const fullData = calculatePortfolio(portfolio.config);
-        if (timeRange === 'max') return fullData;
+        const result = calculatePortfolio(portfolio.config);
+        if (timeRange === 'max') return result.timeSeries;
         const months = timeRange === '5y' ? 60 : 120;
-        return fullData.slice(0, months);
+        return result.timeSeries.slice(0, months);
     }, [portfolio.config, timeRange]);
 
     return (
@@ -34,12 +36,14 @@ const DashboardChart = memo(({ portfolio, isCompareMode, timeRange }: { portfoli
 
 const defaultConfig: PortfolioConfig = {
     initialCapital: 10000,
+    baseCurrency: 'CHF',
+    usdToChfRate: 0.88,
     annualGrowthRate: 7,
     annualInflationRate: 2,
     simulationStart: '2026-03',
     simulationEnd: '2036-03',
     depositStreams: [],
-    stocks: [] // <-- Das hier einfügen!
+    stocks: []
 };
 
 const COMPARE_COLORS = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
@@ -58,6 +62,11 @@ export default function PortfolioDashboard() {
     const [isCombinedView, setIsCombinedView] = useState<boolean>(false);
 
     const activePortfolio = portfolios.find(p => p.id === activePortfolioId) || portfolios[0];
+
+    // Berechnung für das Allocation Chart des aktiven Portfolios (wird nur im Single-Mode gezeigt)
+    const activeAllocation = useMemo(() => {
+        return calculatePortfolio(activePortfolio.config).allocation;
+    }, [activePortfolio.config]);
 
     const updateActiveConfig = (newConfig: PortfolioConfig) => {
         setPortfolios(portfolios.map(p => p.id === activePortfolioId ? { ...p, config: newConfig } : p));
@@ -96,15 +105,13 @@ export default function PortfolioDashboard() {
         let minStart = portfoliosToMerge[0].config.simulationStart;
         let maxEnd = portfoliosToMerge[0].config.simulationEnd;
         let totalCapital = 0, allStreams: DepositStream[] = [];
-        let allStocks: StockPosition[] = []; // <-- NEU: Array für die Aktien
+        let allStocks: StockPosition[] = [];
 
         portfoliosToMerge.forEach(p => {
             totalCapital += p.config.initialCapital;
             if (p.config.simulationStart < minStart) minStart = p.config.simulationStart;
             if (p.config.simulationEnd > maxEnd) maxEnd = p.config.simulationEnd;
             allStreams = [...allStreams, ...p.config.depositStreams.map(s => ({ ...s, id: crypto.randomUUID() }))];
-
-            // <-- NEU: Aktien der zu fusionierenden Portfolios einsammeln
             allStocks = [...allStocks, ...(p.config.stocks || []).map(s => ({ ...s, id: crypto.randomUUID() }))];
         });
 
@@ -122,12 +129,14 @@ export default function PortfolioDashboard() {
             name: `Fusion (${portfoliosToMerge.length})`,
             config: {
                 initialCapital: totalCapital,
+                baseCurrency: portfoliosToMerge[0].config.baseCurrency,
+                usdToChfRate: portfoliosToMerge[0].config.usdToChfRate,
                 annualGrowthRate: getRate(settings.growthStrategy, 'annualGrowthRate'),
                 annualInflationRate: getRate(settings.inflationStrategy, 'annualInflationRate'),
                 simulationStart: minStart,
                 simulationEnd: maxEnd,
                 depositStreams: allStreams,
-                stocks: allStocks // <-- NEU: Hier fehlte die Eigenschaft!
+                stocks: allStocks
             }
         };
 
@@ -142,8 +151,8 @@ export default function PortfolioDashboard() {
 
     const combinedChartData = useMemo(() => {
         return displayPortfolios.map((p, i) => {
-            const fullData = calculatePortfolio(p.config);
-            const slicedData = timeRange === 'max' ? fullData : fullData.slice(0, timeRange === '5y' ? 60 : 120);
+            const result = calculatePortfolio(p.config);
+            const slicedData = timeRange === 'max' ? result.timeSeries : result.timeSeries.slice(0, timeRange === '5y' ? 60 : 120);
             return {
                 name: p.name,
                 data: slicedData,
@@ -197,7 +206,6 @@ export default function PortfolioDashboard() {
                         </AnimatePresence>
                     </GlassCard>
 
-                    {/* Zeit-Filter Bar */}
                     <div className="filter-container">
                         <div className="filter-label"><Clock size={14} /> Zeitraum:</div>
                         <div className="filter-buttons">
@@ -223,6 +231,17 @@ export default function PortfolioDashboard() {
                             displayPortfolios.map(p => (
                                 <DashboardChart key={p.id} portfolio={p} isCompareMode={isCompareMode} timeRange={timeRange} />
                             ))
+                        )}
+
+                        {/* 2. Das Allocation Chart ist jetzt ein eigenständiger Block im Grid (nur im Single-Mode) */}
+                        {!isCompareMode && activeAllocation && activeAllocation.length > 0 && (
+                            <GlassCard>
+                                <div className="card-header-small">
+                                    <PieChartIcon size={20} />
+                                    <h3>Aktuelle Asset Allocation</h3>
+                                </div>
+                                <AllocationChart data={activeAllocation} currency={activePortfolio.config.baseCurrency} />
+                            </GlassCard>
                         )}
                     </div>
                 </div>

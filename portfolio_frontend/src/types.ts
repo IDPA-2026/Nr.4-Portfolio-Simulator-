@@ -18,6 +18,8 @@ export interface StockPosition {
 
 export interface PortfolioConfig {
     initialCapital: number;
+    baseCurrency: string;
+    usdToChfRate: number;
     annualGrowthRate: number;
     annualInflationRate: number;
     simulationStart: string;

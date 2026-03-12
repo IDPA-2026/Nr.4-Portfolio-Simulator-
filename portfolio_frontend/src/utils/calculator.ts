@@ -1,15 +1,33 @@
 import { PortfolioConfig, ChartDataPoint } from '../types';
 
-export function calculatePortfolio(config: PortfolioConfig): ChartDataPoint[] {
+export interface AssetAllocation {
+    name: string;
+    value: number;
+    color: string;
+}
+
+export function calculatePortfolio(config: PortfolioConfig): { timeSeries: ChartDataPoint[], allocation: AssetAllocation[] } {
     const result: ChartDataPoint[] = [];
+    const allocation: AssetAllocation[] = [];
 
     const monthlyGrowthMultiplier = Math.pow(1 + (config.annualGrowthRate / 100), 1 / 12);
     const monthlyInflationMultiplier = Math.pow(1 + (config.annualInflationRate / 100), 1 / 12);
 
-    const stockTrackers = (config.stocks || []).map(stock => ({
-        currentValue: stock.price * stock.shares,
-        monthlyMultiplier: Math.pow(1 + (stock.expectedGrowth / 100), 1 / 12)
-    }));
+    const stockTrackers = (config.stocks || []).map(stock => {
+        let priceInBaseCurrency = stock.price;
+        if (stock.currency === 'USD') {
+            priceInBaseCurrency = stock.price * config.usdToChfRate;
+        }
+
+        const initialValue = priceInBaseCurrency * stock.shares;
+
+        return {
+            name: stock.symbol,
+            originalCurrency: stock.currency,
+            currentValue: initialValue,
+            monthlyMultiplier: Math.pow(1 + (stock.expectedGrowth / 100), 1 / 12)
+        };
+    });
 
     let currentCash = config.initialCapital;
     let currentTotalDeposited = config.initialCapital + stockTrackers.reduce((sum, s) => sum + s.currentValue, 0);
@@ -56,5 +74,25 @@ export function calculatePortfolio(config: PortfolioConfig): ChartDataPoint[] {
         }
     }
 
-    return result;
+    const colors = ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#ef4444', '#06b6d4'];
+
+    if (config.initialCapital > 0) {
+        allocation.push({
+            name: 'Cash (Startkapital)',
+            value: Number(config.initialCapital.toFixed(2)),
+            color: '#3b82f6'
+        });
+    }
+
+    stockTrackers.forEach((tracker, index) => {
+        if (tracker.currentValue > 0) {
+            allocation.push({
+                name: tracker.name,
+                value: Number(tracker.currentValue.toFixed(2)),
+                color: colors[index % colors.length]
+            });
+        }
+    });
+
+    return { timeSeries: result, allocation };
 }
