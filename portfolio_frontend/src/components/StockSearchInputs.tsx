@@ -15,8 +15,8 @@ export default function StockSearchInputs({ stocks, onAdd, onRemove, onUpdateSha
     const [searchResult, setSearchResult] = useState<StockResponse | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const [sharesToAdd, setSharesToAdd] = useState<number>(1);
-    const [growthToAdd, setGrowthToAdd] = useState<number>(8);
+    const [sharesToAdd, setSharesToAdd] = useState<number | string>(1);
+    const [growthToAdd, setGrowthToAdd] = useState<number | string>(8);
 
     const [error, setError] = useState<string | null>(null);
 
@@ -38,16 +38,16 @@ export default function StockSearchInputs({ stocks, onAdd, onRemove, onUpdateSha
     };
 
     const handleAdd = () => {
-        if (!searchResult || !searchResult.close || sharesToAdd <= 0) return;
+        if (!searchResult || !searchResult.close || Number(sharesToAdd) <= 0) return;
 
         const newStock: StockPosition = {
             id: crypto.randomUUID(),
             symbol: searchResult.symbol,
             name: searchResult.name,
-            shares: sharesToAdd,
+            shares: Number(sharesToAdd),
             price: parseFloat(searchResult.close),
             currency: searchResult.currency,
-            expectedGrowth: growthToAdd
+            expectedGrowth: Number(growthToAdd)
         };
 
         onAdd(newStock);
@@ -72,7 +72,7 @@ export default function StockSearchInputs({ stocks, onAdd, onRemove, onUpdateSha
             </div>
 
             <div className="search-section stock-search-section">
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div className="stock-search-flex">
                     <div className="input-group stock-input-group">
                         <div className="input-wrapper stock-input-wrapper">
                             <Search size={18} className="stock-search-icon" />
@@ -119,7 +119,7 @@ export default function StockSearchInputs({ stocks, onAdd, onRemove, onUpdateSha
                                 <div className="stock-result-stats">
                                     <div><strong>52W Low:</strong> {parseFloat(searchResult.fifty_two_week.low).toFixed(2)} | <strong>52W High:</strong> {parseFloat(searchResult.fifty_two_week.high).toFixed(2)}</div>
                                     {drawdown && (
-                                        <div className="stock-result-drawdown" style={{ color: parseFloat(drawdown) < -15 ? '#10b981' : '#f59e0b' }}>
+                                        <div className={`stock-result-drawdown ${parseFloat(drawdown) < -15 ? 'drawdown-good' : 'drawdown-warn'}`}>
                                             <Info size={14} />
                                             Abstand zum Jahreshoch: {drawdown}%
                                             <span className="stock-result-drawdown-hint">
@@ -135,11 +135,11 @@ export default function StockSearchInputs({ stocks, onAdd, onRemove, onUpdateSha
                     <div className="stock-add-inputs">
                         <div className="input-group stock-input-group">
                             <label className="input-label stock-add-label">Anzahl</label>
-                            <input type="number" min="0.1" step="0.1" value={sharesToAdd} onChange={e => setSharesToAdd(Number(e.target.value))} className="input-field" />
+                            <input type="number" min="0.1" step="0.1" value={sharesToAdd} onChange={e => setSharesToAdd(e.target.value === '' ? '' : Number(e.target.value))} className="input-field" />
                         </div>
                         <div className="input-group stock-input-group">
                             <label className="input-label stock-add-label">Wachstum %</label>
-                            <input type="number" step="0.1" value={growthToAdd} onChange={e => setGrowthToAdd(Number(e.target.value))} className="input-field" />
+                            <input type="number" step="0.1" value={growthToAdd} onChange={e => setGrowthToAdd(e.target.value === '' ? '' : Number(e.target.value))} className="input-field" />
                         </div>
                         <button onClick={handleAdd} className="btn-confirm stock-add-btn">
                             <Plus size={16} /> Hinzufügen
@@ -165,7 +165,7 @@ export default function StockSearchInputs({ stocks, onAdd, onRemove, onUpdateSha
                                 <input
                                     type="number"
                                     value={stock.shares}
-                                    onChange={e => onUpdateShares(stock.id, Number(e.target.value))}
+                                    onChange={e => onUpdateShares(stock.id, e.target.value === '' ? 0 : Number(e.target.value))}
                                     className="input-field stock-item-input"
                                 />
                                 <span className="stock-item-span">Stück</span>

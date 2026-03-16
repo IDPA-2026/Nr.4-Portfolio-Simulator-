@@ -13,11 +13,10 @@ export default function PortfolioInputs({ config, setConfig }: Props) {
         const { name, value } = e.target;
         setConfig({
             ...config,
-            [name]: e.target.type === 'number' ? Number(value) : value
+            [name]: e.target.type === 'number' ? (value === '' ? '' : Number(value)) : value
         });
     };
 
-    // Sparpläne Logik
     const addStream = () => {
         const newStream: DepositStream = {
             id: crypto.randomUUID(),
@@ -40,7 +39,6 @@ export default function PortfolioInputs({ config, setConfig }: Props) {
         setConfig({ ...config, depositStreams: config.depositStreams.filter(s => s.id !== id) });
     };
 
-    // Aktien Logik
     const addStock = (stock: StockPosition) => {
         setConfig({ ...config, stocks: [...(config.stocks || []), stock] });
     };

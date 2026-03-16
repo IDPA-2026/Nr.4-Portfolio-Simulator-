@@ -44,7 +44,7 @@ export default function PortfolioComparePanel({
                         {isCombinedView ? "Einzelansicht" : "Kombiniert"}
                     </button>
                     <button onClick={onClose} className="btn-cancel text-xs">
-                        Schließen
+                        Schliessen
                     </button>
                 </div>
             </div>

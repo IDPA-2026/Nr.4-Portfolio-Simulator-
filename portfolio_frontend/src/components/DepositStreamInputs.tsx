@@ -1,6 +1,6 @@
 import { DepositStream } from '../types';
 import { Calendar } from 'lucide-react';
-import { openPicker } from './BaseDataInputs'; // Helper wiederverwenden
+import { openPicker } from './BaseDataInputs';
 
 interface Props {
     streams: DepositStream[];
@@ -23,7 +23,7 @@ export default function DepositStreamInputs({ streams, onAdd, onUpdate, onRemove
                         <div className="stream-row">
                             <input type="text" value={stream.name} onChange={e => onUpdate(stream.id, 'name', e.target.value)} className="input-field" placeholder="Name" />
                             <div className="stream-amount-wrapper">
-                                <input type="number" value={stream.monthlyAmount} onChange={e => onUpdate(stream.id, 'monthlyAmount', Number(e.target.value))} className="input-field" placeholder="Betrag" />
+                                <input type="number" value={stream.monthlyAmount} onChange={e => onUpdate(stream.id, 'monthlyAmount', e.target.value === '' ? '' : Number(e.target.value))} className="input-field" placeholder="Betrag" />
                                 <span className="stream-unit">€/Mt.</span>
                             </div>
                         </div>

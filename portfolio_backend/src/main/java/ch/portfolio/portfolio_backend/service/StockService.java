@@ -17,7 +17,6 @@ public class StockService {
     }
 
     public StockData getStockData(String symbol) {
-        // Wir nutzen jetzt /quote statt /price für mehr Details
         String url = String.format("https://api.twelvedata.com/quote?symbol=%s&apikey=%s",
                 symbol, config.getApiKey());
 
