@@ -1,46 +1,65 @@
-// components/DepositStreamInputs.tsx
-import { DepositStream } from '../types';
-import { Calendar } from 'lucide-react';
+import { TransactionStream, AssetPosition } from '../types';
+import { Calendar, X } from 'lucide-react';
 import { openPicker } from './BaseDataInputs';
 
 interface Props {
-    streams: DepositStream[];
+    streams: TransactionStream[];
+    assets: AssetPosition[];
     onAdd: () => void;
-    onUpdate: (id: string, field: keyof DepositStream, value: string | number) => void;
+    onUpdate: (id: string, field: keyof TransactionStream, value: any) => void;
     onRemove: (id: string) => void;
 }
 
-export default function DepositStreamInputs({ streams, onAdd, onUpdate, onRemove }: Props) {
+export default function DepositStreamInputs({ streams, assets, onAdd, onUpdate, onRemove }: Props) {
     return (
         <div className="config-card">
             <div className="config-card-header">
-                <h2 className="config-card-title">Einzahlungen</h2>
+                <h2 className="config-card-title">Einzahlungen & Käufe</h2>
                 <button onClick={onAdd} className="btn-add-stream">+ Hinzufügen</button>
             </div>
             <div className="stream-list">
-                {streams.map(stream => (
-                    <div key={stream.id} className="stream-item">
-                        <button onClick={() => onRemove(stream.id)} className="btn-remove-stream">X</button>
-                        <div className="stream-row">
+                {streams.map((stream, index) => (
+                    <div key={stream.id} className="stream-item" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1rem', borderLeft: '4px solid var(--primary)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '-0.25rem' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>Einzahlung {index + 1}</span>
+                            <button onClick={() => onRemove(stream.id)} style={{ color: 'var(--danger)', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}><X size={16} /></button>
+                        </div>
+
+                        <div className="stream-row" style={{ margin: 0 }}>
                             <input type="text" value={stream.name} onChange={e => onUpdate(stream.id, 'name', e.target.value)} className="input-field" placeholder="Name" />
                             <div className="stream-amount-wrapper">
-                                <input type="number" value={stream.monthlyAmount} onChange={e => onUpdate(stream.id, 'monthlyAmount', e.target.value === '' ? '' : Number(e.target.value))} className="input-field" placeholder="Betrag" />
-                                <span className="stream-unit">€/Mt.</span>
+                                <input type="number" value={stream.amount} onChange={e => onUpdate(stream.id, 'amount', e.target.value === '' ? '' : Number(e.target.value))} className="input-field" placeholder="Betrag" />
                             </div>
                         </div>
-                        <div className="stream-row">
+
+                        {/* NEU: Target Asset */}
+                        <div className="stream-row" style={{ margin: 0 }}>
+                            <select value={stream.targetAssetId || ''} onChange={e => onUpdate(stream.id, 'targetAssetId', e.target.value)} className="input-field" style={{ gridColumn: 'span 2' }}>
+                                <option value="">Ziel: Konto (Cash)</option>
+                                {assets.map(a => (<option key={a.id} value={a.id}>Ziel: Asset ({a.name})</option>))}
+                            </select>
+                        </div>
+
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={stream.isOneOff} onChange={e => onUpdate(stream.id, 'isOneOff', e.target.checked)} />
+                            Ist eine Einmalzahlung
+                        </label>
+
+                        <div className="stream-row" style={{ margin: 0 }}>
                             <div className="date-input-wrapper">
                                 <input type="month" value={stream.startMonth} onChange={e => onUpdate(stream.id, 'startMonth', e.target.value)} onClick={openPicker} className="input-field" />
                                 <Calendar size={18} className="date-icon" />
                             </div>
-                            <div className="date-input-wrapper">
-                                <input type="month" value={stream.endMonth} onChange={e => onUpdate(stream.id, 'endMonth', e.target.value)} onClick={openPicker} className="input-field" />
-                                <Calendar size={18} className="date-icon" />
-                            </div>
+                            {!stream.isOneOff && (
+                                <div className="date-input-wrapper">
+                                    <input type="month" value={stream.endMonth} onChange={e => onUpdate(stream.id, 'endMonth', e.target.value)} onClick={openPicker} className="input-field" />
+                                    <Calendar size={18} className="date-icon" />
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
-                {streams.length === 0 && <p className="stream-empty">Keine Sparpläne hinterlegt.</p>}
+                {streams.length === 0 && <p className="stream-empty">Keine Einzahlungen hinterlegt.</p>}
             </div>
         </div>
     );

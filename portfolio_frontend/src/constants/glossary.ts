@@ -1,10 +1,13 @@
 export const GLOSSARY = {
-    initialCapital: "Das Startguthaben, mit dem die Simulation beginnt.",
-    growthRate: "Die erwartete jährliche Rendite deiner Anlagen in Prozent (vor Inflation).",
-    inflationRate: "Die Rate, mit der das Geld an Wert verliert. Sie reduziert die reale Kaufkraft deines Kapitals.",
-    nominalValue: "Der Geldbetrag, der schwarz auf weiss auf dem Kontoauszug steht (inkl. Zinsen).",
-    realValue: "Der tatsächliche Wert deines Geldes, bereinigt um die Inflation. Er zeigt, was du dir später wirklich davon kaufen kannst.",
-    depositStream: "Ein regelmässiger Sparplan oder eine Einzahlung über einen festgelegten Zeitraum.",
-    withdrawalStream: "Ein regelmässiger Entnahmeplan über einen festgelegten Zeitraum.",
-    transferStream: "Eine Umbuchung von diesem Konto auf ein anderes Konto."
+    initialCapital: "Das Startguthaben (Cash), mit dem das Konto startet.",
+    growthRate: "Die erwartete jährliche Rendite (Zinsen) auf das Cash in diesem Konto.",
+    inflationRate: "Die Rate, mit der das Geld an Wert verliert (Reduziert die Kaufkraft).",
+    nominalValue: "Der absolute Geldbetrag auf dem Papier (Konto + Assets).",
+    realValue: "Der tatsächliche Wert bereinigt um die Inflation. Zeigt die echte Kaufkraft.",
+    depositStream: "Ein regelmässiger Sparplan oder eine Einzahlung. Kann Cash oder ein Asset füllen.",
+    withdrawalStream: "Eine Auszahlung/Verkauf. Kann von Cash abgehen oder ein Asset liquidieren.",
+    transferStream: "Umbuchung zwischen Konten oder Assets. Steuern (%) simulieren Verluste beim Verkauf.",
+    netWorth: "Das Gesamtvermögen. Die Summe ALLER deiner Konten und Assets zusammen.",
+    oneOff: "Eine Einmalzahlung (One-Off-Event). Eine Aktion, die exakt 1x ausgeführt wird.",
+    asset: "Ein Anlagegut (z.B. ETF, Immobilie), das getrennt vom Cash-Bestand wächst."
 };

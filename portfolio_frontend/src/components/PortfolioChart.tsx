@@ -1,5 +1,5 @@
 // components/PortfolioChart.tsx
-import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ChartDataPoint } from '../types';
 import { useEffect, useState } from 'react';
 

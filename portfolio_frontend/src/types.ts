@@ -1,32 +1,33 @@
-export interface PortfolioConfig {
-    initialCapital: number;
-    baseCurrency: string;
-    usdToChfRate: number;
-    annualGrowthRate: number;
-    annualInflationRate: number;
+export interface GlobalConfig {
     simulationStart: string;
     simulationEnd: string;
-    depositStreams: DepositStream[];
-    withdrawalStreams: DepositStream[];
+    annualInflationRate: number;
+    baseCurrency: string;
+}
+
+export interface AccountConfig {
+    initialCapital: number;
+    annualGrowthRate: number;
+    depositStreams: TransactionStream[];
+    withdrawalStreams: TransactionStream[];
     transfers: TransferStream[];
     assets: AssetPosition[];
 }
 
-export interface DepositStream {
+export interface TransactionStream {
     id: string;
     name: string;
+    isOneOff: boolean;
     startMonth: string;
     endMonth: string;
-    monthlyAmount: number;
+    amount: number;
+    targetAssetId?: string; // NEU: Kauf/Verkauf von spezifischen Assets
 }
 
-export interface TransferStream {
-    id: string;
-    name: string;
-    startMonth: string;
-    endMonth: string;
-    monthlyAmount: number;
-    toPortfolioId: string;
+export interface TransferStream extends TransactionStream {
+    toAccountId: string;
+    toAssetId?: string; // NEU: Direkt in ein Asset des Zielkontos buchen
+    taxRate: number;
 }
 
 export interface AssetPosition {
@@ -45,8 +46,8 @@ export interface ChartDataPoint {
     [key: string]: any;
 }
 
-export interface Portfolio {
+export interface Account {
     id: string;
     name: string;
-    config: PortfolioConfig;
+    config: AccountConfig;
 }
