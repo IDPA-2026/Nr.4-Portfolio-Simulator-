@@ -1,20 +1,12 @@
-import {
-    ComposedChart,
-    Area,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    Legend,
-    ResponsiveContainer
-} from 'recharts';
+// components/PortfolioChart.tsx
+import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ChartDataPoint } from '../types';
 import { useEffect, useState } from 'react';
 
 interface Props {
     data: ChartDataPoint[];
     multiData?: { name: string, data: ChartDataPoint[], color: string }[];
+    assetsNames?: string[];
 }
 
 const dateFormatter = new Intl.DateTimeFormat('de-DE', { month: 'short', year: 'numeric' });
@@ -25,7 +17,7 @@ const formatMonth = (label: any) => {
     return dateFormatter.format(new Date(parseInt(year), parseInt(month) - 1));
 };
 
-export default function PortfolioChart({ data, multiData }: Props) {
+export default function PortfolioChart({ data, multiData, assetsNames = [] }: Props) {
     const [chartColors, setChartColors] = useState({
         grid: '#e2e8f0',
         text: '#6b7280',
@@ -58,11 +50,12 @@ export default function PortfolioChart({ data, multiData }: Props) {
     }, []);
 
     const isCombined = !!multiData && multiData.length > 0;
+    const ASSET_COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#06b6d4', '#84cc16', '#6366f1'];
 
     return (
         <div className="chart-container">
             <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart margin={{ top: 10, right: 10, bottom: 0, left: 10 }}>
+                <ComposedChart margin={{ top: 10, right: 10, bottom: 0, left: 10 }} data={isCombined ? [] : data}>
                     <defs>
                         <linearGradient id="colorDeposited" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -111,41 +104,43 @@ export default function PortfolioChart({ data, multiData }: Props) {
 
                     {!isCombined ? (
                         <>
-                            <Area
-                                type="monotone"
-                                data={data}
-                                dataKey="totalDeposited"
-                                fill="url(#colorDeposited)"
-                                stroke="#3b82f6"
-                                strokeWidth={2}
-                                name="Eingezahltes Kapital"
-                            />
                             <Line
-                                type="monotone"
+                                type="stepAfter"
                                 data={data}
                                 dataKey="nominalValue"
                                 stroke="#10b981"
                                 strokeWidth={3}
                                 dot={false}
-                                name="Nominalwert"
+                                name="Total Nominalwert"
                             />
                             <Line
-                                type="monotone"
+                                type="stepAfter"
                                 data={data}
-                                dataKey="realValue"
-                                stroke="#f59e0b"
+                                dataKey="cashValue"
+                                stroke="#3b82f6"
                                 strokeWidth={2}
-                                strokeDasharray="6 6"
                                 dot={false}
-                                name="Realwert"
+                                name="Cash"
                             />
+                            {assetsNames.map((assetName, idx) => (
+                                <Line
+                                    key={assetName}
+                                    type="stepAfter"
+                                    data={data}
+                                    dataKey={assetName}
+                                    stroke={ASSET_COLORS[idx % ASSET_COLORS.length]}
+                                    strokeWidth={2}
+                                    dot={false}
+                                    name={assetName}
+                                />
+                            ))}
                         </>
                     ) : (
                         multiData.map((set) => (
                             <Line
                                 key={set.name}
                                 data={set.data}
-                                type="monotone"
+                                type="stepAfter"
                                 dataKey="nominalValue"
                                 stroke={set.color}
                                 strokeWidth={3}

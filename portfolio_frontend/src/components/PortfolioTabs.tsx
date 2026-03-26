@@ -1,3 +1,4 @@
+// components/PortfolioTabs.tsx
 import { Portfolio } from '../types';
 
 interface Props {

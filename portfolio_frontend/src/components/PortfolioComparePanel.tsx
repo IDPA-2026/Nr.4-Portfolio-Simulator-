@@ -1,3 +1,4 @@
+// components/PortfolioComparePanel.tsx
 import { Portfolio } from '../types';
 import { Layers, Zap } from 'lucide-react';
 

@@ -1,3 +1,4 @@
+// components/AllocationChart.tsx
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { AssetAllocation } from '../utils/calculator';
 import { useEffect, useState } from 'react';
@@ -18,11 +19,17 @@ export default function AllocationChart({ data, currency }: Props) {
         });
     }, []);
 
-    if (!data || data.length === 0) {
-        return <div className="allocation-empty">Keine Assets vorhanden</div>;
+    const validData = data ? data.filter(item => item.value > 0) : [];
+
+    if (!validData || validData.length === 0) {
+        return (
+            <div className="allocation-wrapper" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-muted)' }}>
+                Kein Kapital vorhanden (0 {currency})
+            </div>
+        );
     }
 
-    const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+    const totalValue = validData.reduce((sum, item) => sum + item.value, 0);
 
     const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
         if (percent < 0.05) return null;
@@ -42,7 +49,7 @@ export default function AllocationChart({ data, currency }: Props) {
             <ResponsiveContainer>
                 <PieChart>
                     <Pie
-                        data={data}
+                        data={validData}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
@@ -53,7 +60,7 @@ export default function AllocationChart({ data, currency }: Props) {
                         labelLine={false}
                         label={renderCustomizedLabel}
                     >
-                        {data.map((entry, index) => (
+                        {validData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                     </Pie>

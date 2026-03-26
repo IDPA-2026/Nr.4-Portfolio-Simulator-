@@ -1,3 +1,4 @@
+// components/BaseDataInputs.tsx
 import { PortfolioConfig } from '../types';
 import { GLOSSARY } from '../constants/glossary';
 import InfoTooltip from './InfoTooltip';

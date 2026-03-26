@@ -1,3 +1,4 @@
+// components/DepositStreamInputs.tsx
 import { DepositStream } from '../types';
 import { Calendar } from 'lucide-react';
 import { openPicker } from './BaseDataInputs';

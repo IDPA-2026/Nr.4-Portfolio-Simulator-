@@ -1,14 +1,18 @@
-import { PortfolioConfig, DepositStream, StockPosition } from '../types';
+import { PortfolioConfig, DepositStream, AssetPosition, Portfolio, TransferStream } from '../types';
 import BaseDataInputs from './BaseDataInputs';
 import DepositStreamInputs from './DepositStreamInputs';
-import StockSearchInputs from './StockSearchInputs';
+import WithdrawalStreamInputs from './WithdrawalStreamInputs';
+import TransferInputs from './TransferInputs';
+import AssetInputs from './AssetInputs';
 
 interface Props {
     config: PortfolioConfig;
     setConfig: (config: PortfolioConfig) => void;
+    allPortfolios: Portfolio[];
+    activePortfolioId: string;
 }
 
-export default function PortfolioInputs({ config, setConfig }: Props) {
+export default function PortfolioInputs({ config, setConfig, allPortfolios, activePortfolioId }: Props) {
     const handleBaseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setConfig({
@@ -17,59 +21,119 @@ export default function PortfolioInputs({ config, setConfig }: Props) {
         });
     };
 
-    const addStream = () => {
+    const addDepositStream = () => {
         const newStream: DepositStream = {
             id: crypto.randomUUID(),
-            name: `Sparplan ${config.depositStreams.length + 1}`,
+            name: `Einzahlung ${(config.depositStreams || []).length + 1}`,
             startMonth: config.simulationStart,
             endMonth: config.simulationEnd,
             monthlyAmount: 100
         };
-        setConfig({ ...config, depositStreams: [...config.depositStreams, newStream] });
+        setConfig({ ...config, depositStreams: [...(config.depositStreams || []), newStream] });
     };
 
-    const updateStream = (id: string, field: keyof DepositStream, value: string | number) => {
-        const updatedStreams = config.depositStreams.map(stream =>
+    const updateDepositStream = (id: string, field: keyof DepositStream, value: string | number) => {
+        const updatedStreams = (config.depositStreams || []).map(stream =>
             stream.id === id ? { ...stream, [field]: value } : stream
         );
         setConfig({ ...config, depositStreams: updatedStreams });
     };
 
-    const removeStream = (id: string) => {
-        setConfig({ ...config, depositStreams: config.depositStreams.filter(s => s.id !== id) });
+    const removeDepositStream = (id: string) => {
+        setConfig({ ...config, depositStreams: (config.depositStreams || []).filter(s => s.id !== id) });
     };
 
-    const addStock = (stock: StockPosition) => {
-        setConfig({ ...config, stocks: [...(config.stocks || []), stock] });
+    const addWithdrawalStream = () => {
+        const newStream: DepositStream = {
+            id: crypto.randomUUID(),
+            name: `Entnahme ${(config.withdrawalStreams || []).length + 1}`,
+            startMonth: config.simulationStart,
+            endMonth: config.simulationEnd,
+            monthlyAmount: 500
+        };
+        setConfig({ ...config, withdrawalStreams: [...(config.withdrawalStreams || []), newStream] });
     };
 
-    const removeStock = (id: string) => {
-        setConfig({ ...config, stocks: (config.stocks || []).filter(s => s.id !== id) });
-    };
-
-    const updateStockShares = (id: string, shares: number) => {
-        const updatedStocks = (config.stocks || []).map(stock =>
-            stock.id === id ? { ...stock, shares } : stock
+    const updateWithdrawalStream = (id: string, field: keyof DepositStream, value: string | number) => {
+        const updatedStreams = (config.withdrawalStreams || []).map(stream =>
+            stream.id === id ? { ...stream, [field]: value } : stream
         );
-        setConfig({ ...config, stocks: updatedStocks });
+        setConfig({ ...config, withdrawalStreams: updatedStreams });
+    };
+
+    const removeWithdrawalStream = (id: string) => {
+        setConfig({ ...config, withdrawalStreams: (config.withdrawalStreams || []).filter(s => s.id !== id) });
+    };
+
+    const addTransfer = () => {
+        const newTransfer: TransferStream = {
+            id: crypto.randomUUID(),
+            name: `Umbuchung ${(config.transfers || []).length + 1}`,
+            startMonth: config.simulationStart,
+            endMonth: config.simulationEnd,
+            monthlyAmount: 500,
+            toPortfolioId: ''
+        };
+        setConfig({ ...config, transfers: [...(config.transfers || []), newTransfer] });
+    };
+
+    const updateTransfer = (id: string, field: keyof TransferStream, value: string | number) => {
+        const updatedTransfers = (config.transfers || []).map(stream =>
+            stream.id === id ? { ...stream, [field]: value } : stream
+        );
+        setConfig({ ...config, transfers: updatedTransfers });
+    };
+
+    const removeTransfer = (id: string) => {
+        setConfig({ ...config, transfers: (config.transfers || []).filter(s => s.id !== id) });
+    };
+
+    const addAsset = (asset: AssetPosition) => {
+        setConfig({ ...config, assets: [...(config.assets || []), asset] });
+    };
+
+    const removeAsset = (id: string) => {
+        setConfig({ ...config, assets: (config.assets || []).filter(s => s.id !== id) });
+    };
+
+    const updateAssetValue = (id: string, value: number) => {
+        const updatedAssets = (config.assets || []).map(asset =>
+            asset.id === id ? { ...asset, value } : asset
+        );
+        setConfig({ ...config, assets: updatedAssets });
     };
 
     return (
         <div className="inputs-grid">
             <BaseDataInputs config={config} onChange={handleBaseChange} />
 
-            <StockSearchInputs
-                stocks={config.stocks || []}
-                onAdd={addStock}
-                onRemove={removeStock}
-                onUpdateShares={updateStockShares}
+            <AssetInputs
+                assets={config.assets || []}
+                onAdd={addAsset}
+                onRemove={removeAsset}
+                onUpdateValue={updateAssetValue}
+            />
+
+            <TransferInputs
+                streams={config.transfers || []}
+                availablePortfolios={allPortfolios.filter(p => p.id !== activePortfolioId)}
+                onAdd={addTransfer}
+                onUpdate={updateTransfer}
+                onRemove={removeTransfer}
             />
 
             <DepositStreamInputs
-                streams={config.depositStreams}
-                onAdd={addStream}
-                onUpdate={updateStream}
-                onRemove={removeStream}
+                streams={config.depositStreams || []}
+                onAdd={addDepositStream}
+                onUpdate={updateDepositStream}
+                onRemove={removeDepositStream}
+            />
+
+            <WithdrawalStreamInputs
+                streams={config.withdrawalStreams || []}
+                onAdd={addWithdrawalStream}
+                onUpdate={updateWithdrawalStream}
+                onRemove={removeWithdrawalStream}
             />
         </div>
     );

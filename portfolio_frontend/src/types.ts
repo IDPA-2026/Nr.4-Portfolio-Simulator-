@@ -1,21 +1,3 @@
-export interface DepositStream {
-    id: string;
-    name: string;
-    startMonth: string;
-    endMonth: string;
-    monthlyAmount: number;
-}
-
-export interface StockPosition {
-    id: string;
-    symbol: string;
-    name: string;
-    shares: number;
-    price: number;
-    currency: string;
-    expectedGrowth: number;
-}
-
 export interface PortfolioConfig {
     initialCapital: number;
     baseCurrency: string;
@@ -25,13 +7,33 @@ export interface PortfolioConfig {
     simulationStart: string;
     simulationEnd: string;
     depositStreams: DepositStream[];
-    stocks: StockPosition[];
+    withdrawalStreams: DepositStream[];
+    transfers: TransferStream[];
+    assets: AssetPosition[];
 }
 
-export interface Portfolio {
+export interface DepositStream {
     id: string;
     name: string;
-    config: PortfolioConfig;
+    startMonth: string;
+    endMonth: string;
+    monthlyAmount: number;
+}
+
+export interface TransferStream {
+    id: string;
+    name: string;
+    startMonth: string;
+    endMonth: string;
+    monthlyAmount: number;
+    toPortfolioId: string;
+}
+
+export interface AssetPosition {
+    id: string;
+    name: string;
+    value: number;
+    expectedGrowth: number;
 }
 
 export interface ChartDataPoint {
@@ -39,4 +41,12 @@ export interface ChartDataPoint {
     totalDeposited: number;
     nominalValue: number;
     realValue: number;
+    cashValue: number;
+    [key: string]: any;
+}
+
+export interface Portfolio {
+    id: string;
+    name: string;
+    config: PortfolioConfig;
 }

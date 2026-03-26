@@ -1,3 +1,4 @@
+// components/InfoTooltip.tsx
 import { useState } from 'react';
 
 interface Props {
