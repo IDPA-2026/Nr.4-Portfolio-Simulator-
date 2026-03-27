@@ -1,4 +1,3 @@
-// components/BaseDataInputs.tsx
 import { AccountConfig } from '../types';
 import { GLOSSARY } from '../constants/glossary';
 import InfoTooltip from './InfoTooltip';
@@ -9,10 +8,11 @@ export const openPicker = (e: React.MouseEvent<HTMLInputElement>) => {
 
 interface Props {
     config: AccountConfig;
+    baseCurrency: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export default function BaseDataInputs({ config, onChange }: Props) {
+export default function BaseDataInputs({ config, baseCurrency, onChange }: Props) {
     return (
         <div className="config-card">
             <div className="config-card-header">
@@ -20,7 +20,7 @@ export default function BaseDataInputs({ config, onChange }: Props) {
             </div>
             <div className="input-grid-2">
                 <div className="input-group">
-                    <label className="input-label">Startkapital (€) <InfoTooltip text={GLOSSARY.initialCapital} /></label>
+                    <label className="input-label">Startkapital ({baseCurrency}) <InfoTooltip text={GLOSSARY.initialCapital} /></label>
                     <input type="number" name="initialCapital" value={config.initialCapital} onChange={onChange} className="input-field" />
                 </div>
                 <div className="input-group">

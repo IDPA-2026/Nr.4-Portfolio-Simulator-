@@ -133,8 +133,6 @@ export default function WealthDashboard() {
         if (activeTab === 'networth') {
             const totalWealthData = calculateTotalWealth(accounts, globalConfig);
             let slicedData = timeRange === 'max' ? totalWealthData : totalWealthData.slice(0, timeRange === '5y' ? 60 : 120);
-
-            // Extrahiere ALLE Asset-Namen über alle Konten hinweg für das Chart
             const allAssetNames = Array.from(new Set(accounts.flatMap(a => a.config.assets.map(ast => ast.name))));
 
             return (
@@ -238,7 +236,7 @@ export default function WealthDashboard() {
                     {!isCompareMode && activeTab !== 'networth' && activeAccount ? (
                         <GlassCard>
                             <div className="card-header-small"><Settings2 size={20} /><h3>{activeAccount.name} konfigurieren</h3></div>
-                            <AccountInputs config={activeAccount.config} setConfig={updateActiveAccount} allAccounts={accounts} activeAccountId={activeTab} />
+                            <AccountInputs config={activeAccount.config} setConfig={updateActiveAccount} allAccounts={accounts} activeAccountId={activeTab} baseCurrency={globalConfig.baseCurrency} />
                         </GlassCard>
                     ) : (
                         <GlassCard>

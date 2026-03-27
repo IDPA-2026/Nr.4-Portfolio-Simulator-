@@ -1,9 +1,8 @@
-// components/PortfolioComparePanel.tsx
-import { Portfolio } from '../types';
+import { Account } from '../types';
 import { Layers, Zap } from 'lucide-react';
 
 interface Props {
-    portfolios: Portfolio[];
+    portfolios: Account[];
     compareIds: string[];
     setCompareIds: (ids: string[]) => void;
     onClose: () => void;
@@ -33,7 +32,7 @@ export default function PortfolioComparePanel({
         <div className="merge-panel compare-panel-wrapper">
             <div className="compare-header">
                 <h3 className="merge-title compare-title">
-                    Portfolios auswählen zum Vergleichen
+                    Konten auswählen zum Vergleichen
                 </h3>
 
                 <div className="compare-controls">

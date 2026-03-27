@@ -10,9 +10,10 @@ interface Props {
     setConfig: (config: AccountConfig) => void;
     allAccounts: Account[];
     activeAccountId: string;
+    baseCurrency: string;
 }
 
-export default function PortfolioInputs({ config, setConfig, allAccounts, activeAccountId }: Props) {
+export default function PortfolioInputs({ config, setConfig, allAccounts, activeAccountId, baseCurrency }: Props) {
     const handleBaseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setConfig({
@@ -55,7 +56,17 @@ export default function PortfolioInputs({ config, setConfig, allAccounts, active
     };
 
     const updateTransfer = (id: string, field: keyof TransferStream, value: any) => {
-        setConfig({ ...config, transfers: (config.transfers || []).map(stream => stream.id === id ? { ...stream, [field]: value } : stream) });
+        setConfig({
+            ...config,
+            transfers: (config.transfers || []).map(stream => {
+                if (stream.id === id) {
+                    const updated = { ...stream, [field]: value };
+                    if (field === 'toAccountId' && value !== activeAccountId) updated.toAssetId = '';
+                    return updated;
+                }
+                return stream;
+            })
+        });
     };
 
     const removeTransfer = (id: string) => { setConfig({ ...config, transfers: (config.transfers || []).filter(s => s.id !== id) }); };
@@ -64,29 +75,39 @@ export default function PortfolioInputs({ config, setConfig, allAccounts, active
     const removeAsset = (id: string) => { setConfig({ ...config, assets: (config.assets || []).filter(s => s.id !== id) }); };
     const updateAssetValue = (id: string, value: number) => { setConfig({ ...config, assets: (config.assets || []).map(asset => asset.id === id ? { ...asset, value } : asset) }); };
 
+    const incomingTransfers = allAccounts.flatMap(a =>
+        (a.config.transfers || [])
+            .filter(t => t.toAccountId === activeAccountId)
+            .map(t => ({ ...t, fromAccountName: a.name, sourceAccountIsSame: a.id === activeAccountId }))
+    ).filter(t => !t.sourceAccountIsSame);
+
     const availableAccounts = allAccounts ? allAccounts.filter(p => p.id !== activeAccountId) : [];
 
     return (
         <div className="inputs-grid">
-            <BaseDataInputs config={config} onChange={handleBaseChange} />
-            <AssetInputs assets={config.assets || []} onAdd={addAsset} onRemove={removeAsset} onUpdateValue={updateAssetValue} />
+            <BaseDataInputs config={config} baseCurrency={baseCurrency} onChange={handleBaseChange} />
+            <AssetInputs assets={config.assets || []} baseCurrency={baseCurrency} onAdd={addAsset} onRemove={removeAsset} onUpdateValue={updateAssetValue} />
 
             <TransferInputs
                 streams={config.transfers || []}
+                incomingTransfers={incomingTransfers}
                 currentAssets={config.assets || []}
                 availableAccounts={availableAccounts}
+                baseCurrency={baseCurrency}
                 onAdd={addTransfer} onUpdate={updateTransfer} onRemove={removeTransfer}
             />
 
             <DepositStreamInputs
                 streams={config.depositStreams || []}
                 assets={config.assets || []}
+                baseCurrency={baseCurrency}
                 onAdd={addDepositStream} onUpdate={updateDepositStream} onRemove={removeDepositStream}
             />
 
             <WithdrawalStreamInputs
                 streams={config.withdrawalStreams || []}
                 assets={config.assets || []}
+                baseCurrency={baseCurrency}
                 onAdd={addWithdrawalStream} onUpdate={updateWithdrawalStream} onRemove={removeWithdrawalStream}
             />
         </div>
