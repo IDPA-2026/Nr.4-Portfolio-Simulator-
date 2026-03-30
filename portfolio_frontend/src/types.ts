@@ -5,9 +5,23 @@ export interface GlobalConfig {
     baseCurrency: string;
 }
 
+export interface LiquidationSplit {
+    id: string;
+    toAccountId: string;
+    percentage: number;
+}
+
+export interface LiquidationEvent {
+    active: boolean;
+    date: string;
+    splits: LiquidationSplit[];
+}
+
 export interface AccountConfig {
     initialCapital: number;
     annualGrowthRate: number;
+    isDetailedMode: boolean;
+    liquidation: LiquidationEvent;
     depositStreams: TransactionStream[];
     withdrawalStreams: TransactionStream[];
     transfers: TransferStream[];
@@ -21,12 +35,12 @@ export interface TransactionStream {
     startMonth: string;
     endMonth: string;
     amount: number;
-    targetAssetId?: string; // NEU: Kauf/Verkauf von spezifischen Assets
+    targetAssetId?: string;
 }
 
 export interface TransferStream extends TransactionStream {
     toAccountId: string;
-    toAssetId?: string; // NEU: Direkt in ein Asset des Zielkontos buchen
+    toAssetId?: string;
     taxRate: number;
 }
 
@@ -40,7 +54,6 @@ export interface AssetPosition {
 export interface ChartDataPoint {
     date: string;
     totalDeposited: number;
-    nominalValue: number;
     realValue: number;
     cashValue: number;
     [key: string]: any;

@@ -24,19 +24,23 @@ const defaultGlobal: GlobalConfig = {
 const defaultBankConfig: AccountConfig = {
     initialCapital: 15000,
     annualGrowthRate: 0.5,
+    isDetailedMode: false,
+    liquidation: { active: false, date: '', splits: [] },
     depositStreams: [{ id: 'dep-1', name: 'Gehalt / Sparen', isOneOff: false, startMonth: '2026-03', endMonth: '2056-03', amount: 1500 }],
     withdrawalStreams: [],
-    transfers: [{ id: 'trans-1', name: 'ETF Sparplan', isOneOff: false, startMonth: '2026-03', endMonth: '2056-03', amount: 1000, toAccountId: '2', toAssetId: 'ast-1', taxRate: 0 }],
+    transfers: [{ id: 'trans-1', name: 'Investieren', isOneOff: false, startMonth: '2026-03', endMonth: '2056-03', amount: 1000, toAccountId: '2', taxRate: 0 }],
     assets: []
 };
 
 const defaultRetirementConfig: AccountConfig = {
-    initialCapital: 0,
-    annualGrowthRate: 1.0,
+    initialCapital: 25000,
+    annualGrowthRate: 5.0,
+    isDetailedMode: false,
+    liquidation: { active: false, date: '', splits: [] },
     depositStreams: [],
     withdrawalStreams: [],
     transfers: [],
-    assets: [{ id: 'ast-1', name: 'Global ETF Portfolio', value: 25000, expectedGrowth: 7.0 }]
+    assets: []
 };
 
 const COMPARE_COLORS = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#06b6d4'];
@@ -65,7 +69,7 @@ export default function WealthDashboard() {
 
     const addAccount = () => {
         const newId = crypto.randomUUID();
-        setAccounts([...accounts, { id: newId, name: `Neues Konto ${accounts.length + 1}`, config: { initialCapital: 0, annualGrowthRate: 0, depositStreams: [], withdrawalStreams: [], transfers: [], assets: [] } }]);
+        setAccounts([...accounts, { id: newId, name: `Neues Konto ${accounts.length + 1}`, config: { initialCapital: 0, annualGrowthRate: 0, isDetailedMode: false, liquidation: { active: false, date: '', splits: [] }, depositStreams: [], withdrawalStreams: [], transfers: [], assets: [] } }]);
         setActiveTab(newId);
     };
 
@@ -119,13 +123,17 @@ export default function WealthDashboard() {
     const renderCharts = () => {
         if (isCompareMode) {
             if (isCombinedView) return (
-                <GlassCard><div className="card-header-small"><BarChart3 size={20} /><h3>Kombinierter Vergleich</h3></div><PortfolioChart data={[]} multiData={combinedChartData} /></GlassCard>
+                <div style={{ height: 'fit-content' }}>
+                    <GlassCard><div className="card-header-small"><BarChart3 size={20} /><h3>Kombinierter Vergleich</h3></div><PortfolioChart data={[]} multiData={combinedChartData} /></GlassCard>
+                </div>
             );
             return accounts.filter(a => compareIds.includes(a.id)).map(acc => {
                 const result = calculateAccount(acc.id, accounts, globalConfig);
                 const slicedData = timeRange === 'max' ? result.timeSeries : result.timeSeries.slice(0, timeRange === '5y' ? 60 : 120);
                 return (
-                    <GlassCard key={acc.id}><div className="card-header-small"><BarChart3 size={20} /><h3>{acc.name}</h3></div><PortfolioChart data={slicedData} assetsNames={acc.config.assets.map(a => a.name)} /></GlassCard>
+                    <div style={{ height: 'fit-content' }} key={acc.id}>
+                        <GlassCard><div className="card-header-small"><BarChart3 size={20} /><h3>{acc.name}</h3></div><PortfolioChart data={slicedData} assetsNames={acc.config.isDetailedMode ? acc.config.assets.map(a => a.name) : []} /></GlassCard>
+                    </div>
                 );
             });
         }
@@ -133,13 +141,17 @@ export default function WealthDashboard() {
         if (activeTab === 'networth') {
             const totalWealthData = calculateTotalWealth(accounts, globalConfig);
             let slicedData = timeRange === 'max' ? totalWealthData : totalWealthData.slice(0, timeRange === '5y' ? 60 : 120);
-            const allAssetNames = Array.from(new Set(accounts.flatMap(a => a.config.assets.map(ast => ast.name))));
+
+            const detailedAccounts = accounts.filter(a => a.config.isDetailedMode);
+            const allAssetNames = Array.from(new Set(detailedAccounts.flatMap(a => a.config.assets.map(ast => ast.name))));
 
             return (
-                <GlassCard>
-                    <div className="card-header-small"><Wallet size={20} /><h3>Gesamtvermögen (Alle Konten)</h3></div>
-                    <PortfolioChart data={slicedData} assetsNames={allAssetNames} />
-                </GlassCard>
+                <div style={{ height: 'fit-content' }}>
+                    <GlassCard>
+                        <div className="card-header-small"><Wallet size={20} /><h3>Gesamtvermögen (Alle Konten)</h3></div>
+                        <PortfolioChart data={slicedData} assetsNames={allAssetNames} />
+                    </GlassCard>
+                </div>
             );
         }
 
@@ -148,10 +160,12 @@ export default function WealthDashboard() {
         let slicedSeries = timeRange === 'max' ? timeSeries : timeSeries.slice(0, timeRange === '5y' ? 60 : 120);
 
         return (
-            <>
-                <GlassCard><div className="card-header-small"><BarChart3 size={20} /><h3>Vermögensentwicklung: {activeAccount.name}</h3></div><PortfolioChart data={slicedSeries} assetsNames={activeAccount.config.assets.map(a => a.name)} /></GlassCard>
-                <GlassCard><div className="card-header-small"><PieChartIcon size={20} /><h3>Aktuelle Allocation (Ist-Zustand)</h3></div><AllocationChart data={allocation} currency={globalConfig.baseCurrency} /></GlassCard>
-            </>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <GlassCard><div className="card-header-small"><BarChart3 size={20} /><h3>Vermögensentwicklung: {activeAccount.name}</h3></div><PortfolioChart data={slicedSeries} assetsNames={activeAccount.config.isDetailedMode ? activeAccount.config.assets.map(a => a.name) : []} /></GlassCard>
+                {activeAccount.config.isDetailedMode && (
+                    <GlassCard><div className="card-header-small"><PieChartIcon size={20} /><h3>Aktuelle Allocation (Ist-Zustand)</h3></div><AllocationChart data={allocation} currency={globalConfig.baseCurrency} /></GlassCard>
+                )}
+            </div>
         );
     };
 
@@ -225,7 +239,7 @@ export default function WealthDashboard() {
                         </div>
                     </div>
 
-                    <div className={`charts-grid ${isCompareMode && !isCombinedView && compareIds.length > 1 ? 'compare-active' : ''}`}>
+                    <div className="charts-grid" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         {renderCharts()}
                     </div>
                 </div>

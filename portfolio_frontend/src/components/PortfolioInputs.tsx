@@ -4,6 +4,7 @@ import DepositStreamInputs from './DepositStreamInputs';
 import WithdrawalStreamInputs from './WithdrawalStreamInputs';
 import TransferInputs from './TransferInputs';
 import AssetInputs from './AssetInputs';
+import LiquidationInputs from './LiquidationInputs';
 
 interface Props {
     config: AccountConfig;
@@ -20,6 +21,10 @@ export default function PortfolioInputs({ config, setConfig, allAccounts, active
             ...config,
             [name]: e.target.type === 'number' ? (value === '' ? '' : Number(value)) : value
         });
+    };
+
+    const toggleDetailedMode = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setConfig({ ...config, isDetailedMode: e.target.checked });
     };
 
     const addDepositStream = () => {
@@ -85,8 +90,18 @@ export default function PortfolioInputs({ config, setConfig, allAccounts, active
 
     return (
         <div className="inputs-grid">
+            <div style={{ backgroundColor: 'var(--card-bg)', padding: '1rem 1.5rem', borderRadius: '0.75rem', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <input type="checkbox" checked={config.isDetailedMode} onChange={toggleDetailedMode} style={{ transform: 'scale(1.2)', cursor: 'pointer' }} />
+                <span style={{ fontWeight: 600 }}>Detaillierte Ansicht (Assets & ETFs)</span>
+            </div>
+
             <BaseDataInputs config={config} baseCurrency={baseCurrency} onChange={handleBaseChange} />
-            <AssetInputs assets={config.assets || []} baseCurrency={baseCurrency} onAdd={addAsset} onRemove={removeAsset} onUpdateValue={updateAssetValue} />
+
+            <LiquidationInputs config={config} availableAccounts={availableAccounts} onChange={setConfig} />
+
+            {config.isDetailedMode && (
+                <AssetInputs assets={config.assets || []} baseCurrency={baseCurrency} onAdd={addAsset} onRemove={removeAsset} onUpdateValue={updateAssetValue} />
+            )}
 
             <TransferInputs
                 streams={config.transfers || []}
@@ -94,6 +109,7 @@ export default function PortfolioInputs({ config, setConfig, allAccounts, active
                 currentAssets={config.assets || []}
                 availableAccounts={availableAccounts}
                 baseCurrency={baseCurrency}
+                isDetailedMode={config.isDetailedMode}
                 onAdd={addTransfer} onUpdate={updateTransfer} onRemove={removeTransfer}
             />
 
@@ -101,6 +117,7 @@ export default function PortfolioInputs({ config, setConfig, allAccounts, active
                 streams={config.depositStreams || []}
                 assets={config.assets || []}
                 baseCurrency={baseCurrency}
+                isDetailedMode={config.isDetailedMode}
                 onAdd={addDepositStream} onUpdate={updateDepositStream} onRemove={removeDepositStream}
             />
 
@@ -108,6 +125,7 @@ export default function PortfolioInputs({ config, setConfig, allAccounts, active
                 streams={config.withdrawalStreams || []}
                 assets={config.assets || []}
                 baseCurrency={baseCurrency}
+                isDetailedMode={config.isDetailedMode}
                 onAdd={addWithdrawalStream} onUpdate={updateWithdrawalStream} onRemove={removeWithdrawalStream}
             />
         </div>

@@ -12,12 +12,13 @@ interface Props {
     currentAssets: AssetPosition[];
     availableAccounts: Account[];
     baseCurrency: string;
+    isDetailedMode: boolean;
     onAdd: () => void;
     onUpdate: (id: string, field: keyof TransferStream, value: any) => void;
     onRemove: (id: string) => void;
 }
 
-export default function TransferInputs({ streams, incomingTransfers, currentAssets, availableAccounts, baseCurrency, onAdd, onUpdate, onRemove }: Props) {
+export default function TransferInputs({ streams, incomingTransfers, currentAssets, availableAccounts, baseCurrency, isDetailedMode, onAdd, onUpdate, onRemove }: Props) {
     return (
         <div className="config-card">
             <div className="config-card-header">
@@ -41,6 +42,7 @@ export default function TransferInputs({ streams, incomingTransfers, currentAsse
                 {streams.map((stream, index) => {
                     const targetAccount = availableAccounts.find(a => a.id === stream.toAccountId);
                     const targetAssets = targetAccount?.config.assets || [];
+                    const showTargetAssetSelect = isDetailedMode && targetAccount?.config.isDetailedMode;
 
                     return (
                         <div key={stream.id} className="stream-item" style={{borderLeft: '4px solid #8b5cf6', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1rem'}}>
@@ -59,22 +61,26 @@ export default function TransferInputs({ streams, incomingTransfers, currentAsse
                                 </div>
                             </div>
 
-                            <div className="stream-row" style={{ margin: 0 }}>
-                                <select value={stream.targetAssetId || ''} onChange={e => onUpdate(stream.id, 'targetAssetId', e.target.value)} className="input-field" style={{ gridColumn: 'span 2' }}>
-                                    <option value="">Quelle: Cash in diesem Konto</option>
-                                    {currentAssets.map(a => (<option key={a.id} value={a.id}>Quelle: Asset ({a.name})</option>))}
-                                </select>
-                            </div>
+                            {isDetailedMode && (
+                                <div className="stream-row" style={{ margin: 0 }}>
+                                    <select value={stream.targetAssetId || ''} onChange={e => onUpdate(stream.id, 'targetAssetId', e.target.value)} className="input-field" style={{ gridColumn: 'span 2' }}>
+                                        <option value="">Quelle: Cash in diesem Konto</option>
+                                        {currentAssets.map(a => (<option key={a.id} value={a.id}>Quelle: Asset ({a.name})</option>))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div className="stream-row" style={{ margin: 0 }}>
-                                <select value={stream.toAccountId} onChange={e => onUpdate(stream.id, 'toAccountId', e.target.value)} className="input-field">
+                                <select value={stream.toAccountId} onChange={e => onUpdate(stream.id, 'toAccountId', e.target.value)} className="input-field" style={!showTargetAssetSelect ? { gridColumn: 'span 2' } : {}}>
                                     <option value="">Zielkonto wählen</option>
                                     {availableAccounts.map(p => (<option key={p.id} value={p.id}>{p.name}</option>))}
                                 </select>
-                                <select value={stream.toAssetId || ''} onChange={e => onUpdate(stream.id, 'toAssetId', e.target.value)} className="input-field" disabled={!stream.toAccountId}>
-                                    <option value="">Ziel: Cash</option>
-                                    {targetAssets.map(a => (<option key={a.id} value={a.id}>Ziel: Asset ({a.name})</option>))}
-                                </select>
+                                {showTargetAssetSelect && (
+                                    <select value={stream.toAssetId || ''} onChange={e => onUpdate(stream.id, 'toAssetId', e.target.value)} className="input-field" disabled={!stream.toAccountId}>
+                                        <option value="">Ziel: Cash</option>
+                                        {targetAssets.map(a => (<option key={a.id} value={a.id}>Ziel: Asset ({a.name})</option>))}
+                                    </select>
+                                )}
                             </div>
 
                             <div className="stream-row" style={{ margin: 0 }}>

@@ -1,4 +1,3 @@
-// components/PortfolioChart.tsx
 import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ChartDataPoint } from '../types';
 import { useEffect, useState } from 'react';
@@ -53,16 +52,9 @@ export default function PortfolioChart({ data, multiData, assetsNames = [] }: Pr
     const ASSET_COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#06b6d4', '#84cc16', '#6366f1'];
 
     return (
-        <div className="chart-container">
+        <div className="chart-container" style={{ width: '100%', minHeight: '400px', height: '400px', position: 'relative' }}>
             <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart margin={{ top: 10, right: 10, bottom: 0, left: 10 }} data={isCombined ? [] : data}>
-                    <defs>
-                        <linearGradient id="colorDeposited" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                        </linearGradient>
-                    </defs>
-
                     <CartesianGrid strokeDasharray="4 4" vertical={false} stroke={chartColors.grid} />
 
                     <XAxis
@@ -78,7 +70,7 @@ export default function PortfolioChart({ data, multiData, assetsNames = [] }: Pr
 
                     <YAxis
                         tick={{ fill: chartColors.text, fontSize: 12 }}
-                        tickFormatter={(value: number) => `${(value / 1000).toLocaleString('de-DE')}k €`}
+                        tickFormatter={(value: number) => `${(value / 1000).toLocaleString('de-DE')}k`}
                         width={60}
                         axisLine={false}
                         tickLine={false}
@@ -87,7 +79,7 @@ export default function PortfolioChart({ data, multiData, assetsNames = [] }: Pr
                     <Tooltip
                         labelFormatter={formatMonth}
                         formatter={(value: any, name: any) => [
-                            `${Number(value).toLocaleString('de-DE')} €`,
+                            `${Number(value).toLocaleString('de-DE')}`,
                             name
                         ]}
                         contentStyle={{
@@ -107,11 +99,11 @@ export default function PortfolioChart({ data, multiData, assetsNames = [] }: Pr
                             <Line
                                 type="stepAfter"
                                 data={data}
-                                dataKey="nominalValue"
+                                dataKey="realValue"
                                 stroke="#10b981"
                                 strokeWidth={3}
                                 dot={false}
-                                name="Total Nominalwert"
+                                name="Kaufkraft (Total)"
                             />
                             <Line
                                 type="stepAfter"
@@ -120,7 +112,7 @@ export default function PortfolioChart({ data, multiData, assetsNames = [] }: Pr
                                 stroke="#3b82f6"
                                 strokeWidth={2}
                                 dot={false}
-                                name="Cash"
+                                name="Cash (Nominal)"
                             />
                             {assetsNames.map((assetName, idx) => (
                                 <Line
@@ -141,7 +133,7 @@ export default function PortfolioChart({ data, multiData, assetsNames = [] }: Pr
                                 key={set.name}
                                 data={set.data}
                                 type="stepAfter"
-                                dataKey="nominalValue"
+                                dataKey="realValue"
                                 stroke={set.color}
                                 strokeWidth={3}
                                 dot={false}

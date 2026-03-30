@@ -6,16 +6,17 @@ interface Props {
     streams: TransactionStream[];
     assets: AssetPosition[];
     baseCurrency: string;
+    isDetailedMode: boolean;
     onAdd: () => void;
     onUpdate: (id: string, field: keyof TransactionStream, value: any) => void;
     onRemove: (id: string) => void;
 }
 
-export default function WithdrawalStreamInputs({ streams, assets, baseCurrency, onAdd, onUpdate, onRemove }: Props) {
+export default function WithdrawalStreamInputs({ streams, assets, baseCurrency, isDetailedMode, onAdd, onUpdate, onRemove }: Props) {
     return (
         <div className="config-card">
             <div className="config-card-header">
-                <h2 className="config-card-title">Auszahlungen & Verkäufe</h2>
+                <h2 className="config-card-title">Auszahlungen {isDetailedMode ? '& Verkäufe' : ''}</h2>
                 <button onClick={onAdd} className="btn-add-stream" style={{backgroundColor: '#ef4444'}}>+ Hinzufügen</button>
             </div>
 
@@ -37,12 +38,14 @@ export default function WithdrawalStreamInputs({ streams, assets, baseCurrency, 
                             </div>
                         </div>
 
-                        <div className="stream-row" style={{ margin: 0 }}>
-                            <select value={stream.targetAssetId || ''} onChange={e => onUpdate(stream.id, 'targetAssetId', e.target.value)} className="input-field" style={{ gridColumn: 'span 2' }}>
-                                <option value="">Quelle: Cash in diesem Konto</option>
-                                {assets.map(a => (<option key={a.id} value={a.id}>Quelle: Asset ({a.name})</option>))}
-                            </select>
-                        </div>
+                        {isDetailedMode && (
+                            <div className="stream-row" style={{ margin: 0 }}>
+                                <select value={stream.targetAssetId || ''} onChange={e => onUpdate(stream.id, 'targetAssetId', e.target.value)} className="input-field" style={{ gridColumn: 'span 2' }}>
+                                    <option value="">Quelle: Cash in diesem Konto</option>
+                                    {assets.map(a => (<option key={a.id} value={a.id}>Quelle: Asset ({a.name})</option>))}
+                                </select>
+                            </div>
+                        )}
 
                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', cursor: 'pointer' }}>
                             <input type="checkbox" checked={stream.isOneOff} onChange={e => onUpdate(stream.id, 'isOneOff', e.target.checked)} />
