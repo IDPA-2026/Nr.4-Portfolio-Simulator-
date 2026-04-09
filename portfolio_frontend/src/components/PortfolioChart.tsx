@@ -52,8 +52,9 @@ export default function PortfolioChart({ data, multiData, assetsNames = [] }: Pr
     const ASSET_COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#06b6d4', '#84cc16', '#6366f1'];
 
     return (
-        <div className="chart-container" style={{ width: '100%', minHeight: '400px', height: '400px', position: 'relative' }}>
-            <ResponsiveContainer width="100%" height="100%">
+        <div className="chart-container" style={{ width: '100%', height: 400, minHeight: 400 }}>
+            {/* DER FIX für das Hauptchart: width="99%" und height={400} als Zahl */}
+            <ResponsiveContainer width="99%" height={400}>
                 <ComposedChart margin={{ top: 10, right: 10, bottom: 0, left: 10 }} data={isCombined ? [] : data}>
                     <CartesianGrid strokeDasharray="4 4" vertical={false} stroke={chartColors.grid} />
 
@@ -145,5 +146,4 @@ export default function PortfolioChart({ data, multiData, assetsNames = [] }: Pr
                 </ComposedChart>
             </ResponsiveContainer>
         </div>
-    );
-}
+    );}

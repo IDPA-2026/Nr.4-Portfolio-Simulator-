@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, Trash2, Settings2, BarChart3, Clock, PieChart as PieChartIcon, BookOpen, Download, Upload, Wallet, LayoutDashboard } from 'lucide-react';
+import { TrendingUp, Trash2, Settings2, BarChart3, Clock, BookOpen, Download, Upload, Wallet, LayoutDashboard } from 'lucide-react';
 
 import { Account, AccountConfig, GlobalConfig } from '../types';
 import { calculateAccount, calculateTotalWealth } from '../utils/calculator';
@@ -8,7 +8,6 @@ import GlobalSettingsPanel from './GlobalSettingsPanel';
 import AccountInputs from './PortfolioInputs';
 import PortfolioChart from './PortfolioChart';
 import GlassCard from './GlassCard';
-import AllocationChart from './AllocationChart';
 import GlossaryPanel from './GlossaryPanel';
 import PortfolioComparePanel from './PortfolioComparePanel';
 
@@ -45,7 +44,8 @@ const defaultRetirementConfig: AccountConfig = {
 
 const COMPARE_COLORS = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#06b6d4'];
 
-export default function WealthDashboard() {
+// HIER IST DER KORREKTE NAME WIEDER HERGESTELLT:
+export default function PortfolioDashboard() {
     const [globalConfig, setGlobalConfig] = useState<GlobalConfig>(defaultGlobal);
     const [accounts, setAccounts] = useState<Account[]>([
         { id: '1', name: 'Girokonto (Alltag)', config: defaultBankConfig },
@@ -132,7 +132,7 @@ export default function WealthDashboard() {
                 const slicedData = timeRange === 'max' ? result.timeSeries : result.timeSeries.slice(0, timeRange === '5y' ? 60 : 120);
                 return (
                     <div style={{ height: 'fit-content' }} key={acc.id}>
-                        <GlassCard><div className="card-header-small"><BarChart3 size={20} /><h3>{acc.name}</h3></div><PortfolioChart data={slicedData} assetsNames={acc.config.isDetailedMode ? acc.config.assets.map(a => a.name) : []} /></GlassCard>
+                        <GlassCard><div className="card-header-small"><BarChart3 size={20} /><h3>{acc.name}</h3></div><PortfolioChart data={slicedData} /></GlassCard>
                     </div>
                 );
             });
@@ -142,49 +142,49 @@ export default function WealthDashboard() {
             const totalWealthData = calculateTotalWealth(accounts, globalConfig);
             let slicedData = timeRange === 'max' ? totalWealthData : totalWealthData.slice(0, timeRange === '5y' ? 60 : 120);
 
-            const detailedAccounts = accounts.filter(a => a.config.isDetailedMode);
-            const allAssetNames = Array.from(new Set(detailedAccounts.flatMap(a => a.config.assets.map(ast => ast.name))));
-
             return (
                 <div style={{ height: 'fit-content' }}>
                     <GlassCard>
                         <div className="card-header-small"><Wallet size={20} /><h3>Gesamtvermögen (Alle Konten)</h3></div>
-                        <PortfolioChart data={slicedData} assetsNames={allAssetNames} />
+                        <PortfolioChart data={slicedData} />
                     </GlassCard>
                 </div>
             );
         }
 
         if (!activeAccount) return null;
-        const { timeSeries, allocation } = calculateAccount(activeAccount.id, accounts, globalConfig);
+        const { timeSeries } = calculateAccount(activeAccount.id, accounts, globalConfig);
         let slicedSeries = timeRange === 'max' ? timeSeries : timeSeries.slice(0, timeRange === '5y' ? 60 : 120);
 
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <GlassCard><div className="card-header-small"><BarChart3 size={20} /><h3>Vermögensentwicklung: {activeAccount.name}</h3></div><PortfolioChart data={slicedSeries} assetsNames={activeAccount.config.isDetailedMode ? activeAccount.config.assets.map(a => a.name) : []} /></GlassCard>
-                {activeAccount.config.isDetailedMode && (
-                    <GlassCard><div className="card-header-small"><PieChartIcon size={20} /><h3>Aktuelle Allocation (Ist-Zustand)</h3></div><AllocationChart data={allocation} currency={globalConfig.baseCurrency} /></GlassCard>
-                )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: 'fit-content' }}>
+                <GlassCard><div className="card-header-small"><BarChart3 size={20} /><h3>Vermögensentwicklung: {activeAccount.name}</h3></div><PortfolioChart data={slicedSeries} /></GlassCard>
             </div>
         );
     };
 
     return (
         <div className="dashboard">
-            <header className="dashboard-header">
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="dashboard-title-group">
-                    <h1>WealthView</h1>
+            {/* Header perfekt am unteren Rand (flex-end) ausgerichtet */}
+            <header className="dashboard-header" style={{ alignItems: 'flex-end', paddingBottom: '0.5rem' }}>
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="dashboard-title-group" style={{ margin: 0, paddingBottom: '0.2rem' }}>
+                    <h1 style={{ lineHeight: 1.1 }}>WealthView</h1>
                     <p className="dashboard-subtitle">Multi-Konto Finanzsimulator</p>
                 </motion.div>
-                <div className="dashboard-header-controls">
-                    <button onClick={() => setShowGlossary(!showGlossary)} className="btn-filter dashboard-filter-btn"><BookOpen size={16} /> Glossar</button>
-                    <input type="file" accept=".json" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
-                    <button onClick={() => fileInputRef.current?.click()} className="btn-filter dashboard-filter-btn"><Upload size={16} /> Import</button>
-                    <button onClick={exportConfig} className="btn-filter dashboard-filter-btn"><Download size={16} /> Export</button>
 
-                    <div className="tabs-container">
+                <div className="dashboard-header-controls" style={{ alignItems: 'flex-end', gap: '1.5rem' }}>
+                    {/* Filter Buttons mit leichtem Margin, um mit den Text-Baselines der Tabs abzuschließen */}
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2px' }}>
+                        <button onClick={() => setShowGlossary(!showGlossary)} className="btn-filter dashboard-filter-btn"><BookOpen size={16} /> Glossar</button>
+                        <input type="file" accept=".json" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
+                        <button onClick={() => fileInputRef.current?.click()} className="btn-filter dashboard-filter-btn"><Upload size={16} /> Import</button>
+                        <button onClick={exportConfig} className="btn-filter dashboard-filter-btn"><Download size={16} /> Export</button>
+                    </div>
+
+                    {/* Tabs ohne Padding unten, damit der Rand perfekt anliegt */}
+                    <div className="tabs-container" style={{ margin: 0, paddingBottom: 0 }}>
                         <button onClick={() => {setActiveTab('networth'); setIsCompareMode(false);}} className={`tab-button ${activeTab === 'networth' && !isCompareMode ? 'active' : ''}`} style={{ fontWeight: 'bold' }}>
-                            <Wallet size={16} style={{display: 'inline', marginRight: '6px', verticalAlign: 'middle'}}/>Gesamtvermögen
+                            <Wallet size={16} style={{display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom'}}/>Gesamtvermögen
                         </button>
                         {accounts.map(p => (
                             <button key={p.id} onClick={() => {setActiveTab(p.id); setIsCompareMode(false);}} className={`tab-button ${activeTab === p.id && !isCompareMode ? 'active' : ''}`}>{p.name}</button>

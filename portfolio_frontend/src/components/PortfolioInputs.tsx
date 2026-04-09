@@ -1,9 +1,8 @@
-import { AccountConfig, TransactionStream, AssetPosition, Account, TransferStream } from '../types';
+import { AccountConfig, TransactionStream, Account, TransferStream } from '../types';
 import BaseDataInputs from './BaseDataInputs';
 import DepositStreamInputs from './DepositStreamInputs';
 import WithdrawalStreamInputs from './WithdrawalStreamInputs';
 import TransferInputs from './TransferInputs';
-import AssetInputs from './AssetInputs';
 import LiquidationInputs from './LiquidationInputs';
 
 interface Props {
@@ -21,10 +20,6 @@ export default function PortfolioInputs({ config, setConfig, allAccounts, active
             ...config,
             [name]: e.target.type === 'number' ? (value === '' ? '' : Number(value)) : value
         });
-    };
-
-    const toggleDetailedMode = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setConfig({ ...config, isDetailedMode: e.target.checked });
     };
 
     const addDepositStream = () => {
@@ -76,10 +71,6 @@ export default function PortfolioInputs({ config, setConfig, allAccounts, active
 
     const removeTransfer = (id: string) => { setConfig({ ...config, transfers: (config.transfers || []).filter(s => s.id !== id) }); };
 
-    const addAsset = (asset: AssetPosition) => { setConfig({ ...config, assets: [...(config.assets || []), asset] }); };
-    const removeAsset = (id: string) => { setConfig({ ...config, assets: (config.assets || []).filter(s => s.id !== id) }); };
-    const updateAssetValue = (id: string, value: number) => { setConfig({ ...config, assets: (config.assets || []).map(asset => asset.id === id ? { ...asset, value } : asset) }); };
-
     const incomingTransfers = allAccounts.flatMap(a =>
         (a.config.transfers || [])
             .filter(t => t.toAccountId === activeAccountId)
@@ -90,42 +81,33 @@ export default function PortfolioInputs({ config, setConfig, allAccounts, active
 
     return (
         <div className="inputs-grid">
-            <div style={{ backgroundColor: 'var(--card-bg)', padding: '1rem 1.5rem', borderRadius: '0.75rem', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <input type="checkbox" checked={config.isDetailedMode} onChange={toggleDetailedMode} style={{ transform: 'scale(1.2)', cursor: 'pointer' }} />
-                <span style={{ fontWeight: 600 }}>Detaillierte Ansicht (Assets & ETFs)</span>
-            </div>
-
             <BaseDataInputs config={config} baseCurrency={baseCurrency} onChange={handleBaseChange} />
 
             <LiquidationInputs config={config} availableAccounts={availableAccounts} onChange={setConfig} />
 
-            {config.isDetailedMode && (
-                <AssetInputs assets={config.assets || []} baseCurrency={baseCurrency} onAdd={addAsset} onRemove={removeAsset} onUpdateValue={updateAssetValue} />
-            )}
-
             <TransferInputs
                 streams={config.transfers || []}
                 incomingTransfers={incomingTransfers}
-                currentAssets={config.assets || []}
+                currentAssets={[]}
                 availableAccounts={availableAccounts}
                 baseCurrency={baseCurrency}
-                isDetailedMode={config.isDetailedMode}
+                isDetailedMode={false}
                 onAdd={addTransfer} onUpdate={updateTransfer} onRemove={removeTransfer}
             />
 
             <DepositStreamInputs
                 streams={config.depositStreams || []}
-                assets={config.assets || []}
+                assets={[]}
                 baseCurrency={baseCurrency}
-                isDetailedMode={config.isDetailedMode}
+                isDetailedMode={false}
                 onAdd={addDepositStream} onUpdate={updateDepositStream} onRemove={removeDepositStream}
             />
 
             <WithdrawalStreamInputs
                 streams={config.withdrawalStreams || []}
-                assets={config.assets || []}
+                assets={[]}
                 baseCurrency={baseCurrency}
-                isDetailedMode={config.isDetailedMode}
+                isDetailedMode={false}
                 onAdd={addWithdrawalStream} onUpdate={updateWithdrawalStream} onRemove={removeWithdrawalStream}
             />
         </div>
